@@ -1,80 +1,33 @@
-%%
-%% This is file `sample-sigconf.tex',
-%% generated with the docstrip utility.
-%%
-%% The original source files were:
-%%
-%% samples.dtx  (with options: `all,proceedings,bibtex,sigconf')
-%% 
-%% IMPORTANT NOTICE:
-%% 
-%% For the copyright see the source file.
-%% 
-%% Any modified versions of this file must be renamed
-%% with new filenames distinct from sample-sigconf.tex.
-%% 
-%% For distribution of the original source see the terms
-%% for copying and modification in the file samples.dtx.
-%% 
-%% This generated file may be distributed as long as the
-%% original source files, as listed above, are part of the
-%% same distribution. (The sources need not necessarily be
-%% in the same archive or directory.)
-%%
-%%
-%% Commands for TeXCount
-%TC:macro \cite [option:text,text]
-%TC:macro \citep [option:text,text]
-%TC:macro \citet [option:text,text]
-%TC:envir table 0 1
-%TC:envir table* 0 1
-%TC:envir tabular [ignore] word
-%TC:envir displaymath 0 word
-%TC:envir math 0 word
-%TC:envir comment 0 0
-%%
-%% The first command in your LaTeX source must be the \documentclass
-%% command.
-%%
-%% For submission and review of your manuscript please change the
-%% command to \documentclass[manuscript, screen, review]{acmart}.
-%%
-%% When submitting camera ready or to TAPS, please change the command
-%% to \documentclass[sigconf]{acmart} or whichever template is required
-%% for your publication.
-%%
-%%
-\documentclass[sigconf,review]{acmart}
-%%
-%% \BibTeX command to typeset BibTeX logo in the docs
+\documentclass[sigconf,review, nonacm]{acmart}
+
+
 \AtBeginDocument{%
   \providecommand\BibTeX{{%
     Bib\TeX}}}
 
-%% Rights management information.  This information is 
-
-\usepackage{cite}
-\usepackage{amsmath,amssymb}
-%amsfonts}
-
-\usepackage{algorithmic}    % 提供 \State, \While, \For, \If, \EndIf, \EndWhile, \Return 等伪代码命令
-%\usepackage{algorithm}
-\usepackage[ruled,vlined,linesnumbered]{algorithm2e}
-\usepackage{adjustbox}
-\usepackage{graphicx}
-\usepackage{textcomp}
-\usepackage{xcolor}
-\usepackage{latexsym}
-%\usepackage{bbm}
-\usepackage{siunitx}
+\usepackage{tabularx}
+\usepackage{stfloats}
+\usepackage{amsmath}
 \usepackage{bm}
 \usepackage{nicefrac}
-%\usepackage[usenames]{color}
 \usepackage{booktabs}
 \usepackage{array}
+\usepackage{multirow}
 \usepackage{threeparttable}
 \usepackage{makecell}
-\usepackage{multirow}
+\usepackage[procnumbered,ruled,vlined,linesnumbered]{algorithm2e}
+\usepackage{siunitx}
+\usepackage{stfloats}
+\usepackage{graphicx}
+\usepackage{subfigure}
+\usepackage{hyperref}
+\usepackage{array}
+\usepackage{epstopdf}
+\usepackage{mweights}
+\usepackage{balance}
+\usepackage{adjustbox}
+\usepackage{numprint}
+\usepackage{float}
 
 
 
@@ -136,162 +89,41 @@
 
 \newcommand{\one}{\mathbf{1}}
 
-
+\newcommand{\wgy}[1]{%
+    \textcolor{red}{[wgy:#1]}%
+}
 
 
 
 \def\calG{\mathcal{G}}
-%%
-%% end of the preamble, start of the body of the document source.
+
+
 \begin{document}
 
-%%
-%% The "title" command has an optional parameter,
-%% allowing the author to define a "short title" to be used in page headers.
 \title{Accelerated Opinion Evolution for the Friedkin-Johnsen Model}
 
-%% 
-%% The "author" command and its associated commands are used to define
-%% the authors and their affiliations.
-%% Of note is the shared affiliation of the first two authors, and the
-%% "authornote" and "authornotemark" commands
-%% used to denote shared contribution to the research.
-\author{Anonymous Author}
+\author{anonymous authors}
 
-
-
-%%
-%% By default, the full list of authors will be used in the page
-%% headers. Often, this list is too long, and will overlap
-%% other information printed in the page headers. This command allows
-%% the author to define a more concise list
-%% of authors' names for this purpose.
-\renewcommand{\shortauthors}{Trovato et al.}
-
-%%
-%% The abstract is a short summary of the work to be presented in the
-%% article.
 \begin{abstract}
-
-
-Online social networks have become a central medium for large-scale opinion sharing and formation, shaping opinion dynamics across domains such as politics, public health, and misinformation diffusion.  
-In this context, the Friedkin--Johnsen (FJ) model is a widely used model for studying opinion formation in social networks, capturing the effects of internal opinions and social influence. 
-However, existing models typically account only for initial opinions and neighbor interactions, while neglecting latest opinion updates and historical memory, despite their prevalence in real-world social networks.
-To address this limitation, we propose an opinion evolution framework that extends the classical FJ model and instantiate it through three iterative algorithms, capturing latest opinion updates, self-interaction effects, and historical influence.
-We theoretically prove that the proposed algorithms converge to the same equilibrium opinion, while achieving faster convergence rates than existing methods. 
-Extensive experiments on a large collection of real-world networks demonstrate that our methods are efficient and effective, and remain scalable to networks with millions of nodes.
+Online social networks serve as a pivotal platform for opinion formation and dissemination, characterized by highly dynamic interaction patterns. The Friedkin–Johnsen model provides a foundational framework for studying opinion dynamics in such settings. However, standard solvers for this model update opinions using only initial opinions and a fixed neighborhood structure, thereby ignoring temporal dependencies and suffering from slow convergence on large-scale graphs.
+To overcome this limitation, we propose a new class of efficient solvers that preserve the original equilibrium of the Friedkin–Johnsen model while significantly accelerating convergence. Our approach enriches the update rule with temporal awareness by responding to the latest expressed opinions and retaining memory of past states.
+Experiments on real-world networks containing millions to tens of millions of nodes demonstrate the effectiveness, accuracy, and scalability of our methods.
 
 \end{abstract}
 
-%%
-%% The code below is generated by the tool at http://dl.acm.org/ccs.cfm.
-%% Please copy and paste the code instead of the example below.
-%%
+
+\keywords{Opinion dynamics, social networks, graph algorithms, multi-agent systems}
 
 
-%%
-%% Keywords. The author(s) should pick words that accurately describe
-%% the work being presented. Separate the keywords with commas.
-\keywords{Opinion Dynamics, Online Social Networks, Friedkin--Johnsen Model, Iterative Algorithms}
-%% A "teaser" image appears between the author and affiliation
-%% information and the body of the document, and typically spans the
-%% page.
-
-
-
-
-
-%%
-%% This command processes the author and affiliation and title
-%% information and builds the first part of the formatted document.
 \maketitle
 
 
+\input{introduction}
 
-\section{Introduction}
-Social media and online social networks have fundamentally changed how opinions are formed, exchanged, and disseminated at scale. Understanding opinion dynamics in such networks is critical for analyzing key social phenomena, including polarization, disagreement, and conflict. To this end, a variety of mathematical models have been proposed, among which the Friedkin–Johnsen (FJ) model has emerged as one of the most widely adopted frameworks due to its simplicity and strong explanatory power.
+\input{relatedWork}
 
-A central object of interest in the FJ model is the equilibrium opinion vector, which characterizes individuals’ expressed opinions at steady state and serves as the basis for measuring polarization and disagreement. Existing studies have extensively analyzed the properties, interpretations, and applications of the FJ model. However, a key limitation shared by most existing formulations is that opinion updates are restricted to pairwise interactions among nearest neighbors. In contrast, real-world social interactions often extend beyond immediate neighbors: individuals may be influenced by second-order or higher-order connections through long-range ties, indirect information exposure, or social bridges. Such higher-order interactions have been shown to play a fundamental role in information diffusion and opinion formation, yet they are not explicitly captured by the classical FJ framework.
-However, a key limitation shared by most existing formulations of the FJ model is that opinion updates are driven solely by individuals’ initial opinions and static neighbor interactions. In real-world social networks, opinion formation is often a dynamic process in which individuals react to the most recently expressed opinions, exhibit self-reinforcement effects, and are influenced by their own historical opinions over time. Ignoring such latest updates and historical memory may limit the model’s ability to fully capture realistic opinion evolution processes observed in large-scale online platforms.
+\input{preliminaries}
 
-To address this limitation, we develop an opinion evolution framework that extends the classical FJ model to account for temporal dependencies in opinion updates, including the influence of recently expressed opinions and historical self-interaction. This framework gives rise to a family of iterative update rules, which preserve the equilibrium structure of the original FJ model while enabling faster convergence in practice. 
-
-While a variety of iterative acceleration and optimization techniques have been extensively studied for the DeGroot model, their extension to the Friedkin–Johnsen (FJ) model remains largely unexplored.
-This gap is nontrivial: unlike DeGroot dynamics, the FJ model explicitly incorporates agents’ intrinsic opinions, leading to fundamentally different equilibrium structures and computational challenges.
-As a result, techniques that are effective for DeGroot-type consensus models cannot be directly applied to the FJ setting.
-
-From a computational perspective, incorporating temporal dependencies such as latest opinion updates and historical memory leads to iterative opinion dynamics that differ from the standard FJ update rule. While these extensions preserve the same equilibrium opinion as the classical FJ model, they introduce additional dependencies across iterations, making efficient convergence a key computational challenge for large-scale networks. To address this issue, we design efficient iterative algorithms that explicitly exploit the structure of the proposed update rules, and provide theoretical guarantees on convergence behavior.
-
-Extensive experiments on real-world networks demonstrate that the proposed methods are both efficient and scalable, enabling the computation of equilibrium opinions on graphs with millions of nodes. The results show that incorporating latest opinion updates and historical influence significantly accelerates convergence in practice, while maintaining the equilibrium structure of the classical FJ model, making the proposed framework suitable for large-scale
-opinion analysis.
-
-
-\section{Related Work}
-
-\section{Preliminaries}\label{sec:prelim}
-In this section, we introduce some useful notations and fundamental concepts of the FJ model of opinion formation for the convenience of description of problem formulation and algorithm.
-
-\subsection{Notations}
-We use $\mathbb{R}$ to represent the set of real numbers and regular lowercase letters like $a,b,c$ to represent scalars in $\mathbb{R}$. Bold lower letters are column vectors, e.g., $\aaa,\bb,\cc$. Bold capital letters, e.g., $\AA,\BB,\CC$ are matrices. To denote specific elements in vectors and matrices, We denote $A_{ij}$ as the entry of $\AA$ at $i$-th row and $j$-th column and $a_i$ as $i$-th element of vector $\aaa$. And we use $\aaa^\top$ and $\AA^\top$ to denote transpose of vector $\aaa$ and matrix $\AA$. 
-We use $\one$ to denote the vector of appropriate dimensions with all entries being ones and use $\ee_u$ to represent the $u$-th standard basis vector of appropriate dimensions. 
-$\II$ denotes the identify matrix of appropriate dimensions. 
-
-\subsection{Graph and Matrix Definitions}
-Let $\calG = (V,E)$ be an unweighted simple graph with $n = |V|$ nodes and  $m = |E|$ edges, where $V$ is the set of nodes and $E \subseteq V \times V$ is the set of edges. The graph $\calG$ is either a directed graph or an undirected graph depending on the context. The adjacency relation of all nodes in $\calG$ is encoded in the adjacency matrix $\AA$,  whose entry $a_{i j}=1$ if $i$ and $j$ are adjacent, and $a_{i j}=0$ otherwise. For any given node $i$, $N_i$ denote the  set  of its neighbors, meaning $N_i =\{ j: (i,j)\in E\}$. The degree \(d_i\) of any node \(i\) is defined by \(d_i=\sum_{j=1}^n a_{ij}\). The degree diagonal matrix of $\calG$ is $\DD={\rm diag}(d_1, d_2, \cdots, d_n)$. The degree vector $\dd$ is given by $\dd = \DD\one$. The transition matrix of an unbiased random walk on graph $\calG$ is $\PP = \DD^{-1} \AA$, which is a row-stochastic matrix. The Laplacian matrix $\LL$ of $\calG$ is $\LL = \DD - \AA$, which is a symmetric semi-positive definite matrix. Matrix $\LL$ is singular, and thus it is irreversible. For a matrix $\MM$, if the magnitudes of all the eigenvalues of $M$ are less than $1$, then the series $\sum_{k=0}^\infty \MM^k$ is a Neumann series and converges to \( (\II - \MM)^{-1} \). 
-
-\subsection{Friedkin--Johnsen (FJ) Model}\label{sec:FJ}
-As one of the first opinion dynamics models, the FJ model is an extension of the DeGroot's opinion model. In the DeGroot
-model, every node has only one opinion that is updated as the weighted
-average of its neighbors. Different from the DeGroot model, in the FJ
-model, each node $i \in V$ has two different kinds of opinions: one is
-the internal (or innate) opinion $s_i$, the other is the expressed
-opinion $z_i$. The internal opinion $s_i$ is assumed to remain constant,
-private to node $i$, while the expressed opinion $z_i$ evolves as a
-weighted average of its corresponding internal opinion $s_i$ and the
-expressed opinions of $i$'s neighbors. 
-
-
-Given a graph $G=(V,E)$, let $\mathbf{s}$ denote the internal opinion vector, with each entry satisfying $s_i\in[0,1]$.
-The formulation of the equilibrium opinion expressed in the FJ model is an iterative form such that
-\begin{equation}
-z^{(t+1)}_{i}=\frac{s_{i}+\sum_{j\in N_{i}}a_{ij}z^{(t)}_{j}}{1+\sum_{j\in N{i}}a_{ij}}.
-\label{fj-iteration}
-\end{equation}
-
-As in the FJ iterative formula above, the opinion of each node in the FJ model is updated as the weighted average of the neighbor's expressed opinion $z_j$ and its own internal opinion $s_i$. 
-When $t$ approches infinity, the updated expressed opinion was shown to converge to a unique equilibrium opinion $\zz_i$. So the iterative update in Equation~1 can be written compactly as 
-\(
-{\zz}^{(t+1)} = (\II+\DD)^{-1}\bigl(\s + \AA\zz^{(t)}\bigr)
-\)
-in vector form,
-which expresses the FJ dynamics as a linear transformation applied at each iteration.
-Then the system of equilibrium
-expressed opinion vector $\zz$ is equivalent to:
-$(\II+\LL)\zz=\s,$
-where $\II$ is the identify matrix , and $\LL=\DD-\AA$ is the Laplacian matrix. When $\mathcal{G}$ is connected and $a_{ij}\ge 0$, the matrix $\II+\LL$ is symmetric positive definite, ensuring existence and uniqueness of $\zz$. 
-This characterization motivates estimators and algorithms that exploit the spectral and structural properties of the Laplacian. 
-
-\subsection{Game-theoretic Interpretation}
-From a game-theoretic perspective, the classical FJ model admits an equivalent interpretation as the equilibrium of a quadratic utility game.
-Recall that the FJ equilibrium satisfies 
-$(\II+\DD-\AA)\zz=\s$.
-For undirected graphs, the matrix $\II+\DD-\AA$ corresponds to a symmetric, positive definite Laplacian-based operator, which allows the equilibrium to be characterized as the unique minimizer of a strongly convex quadratic objective.
-
-This formulation further admits a decentralized interpretation.
-Updating $z_i$ according to the FJ rule is equivalent to each agent $i$
-minimizing the local quadratic cost
-\begin{equation}
-	\label{eq:local-cost}
-	(z_i - s_i)^2 + \sum_{j \in N(i)} w_{i,j} (z_i - z_j)^2 ,
-\end{equation}
-given the opinions of its neighbors.
-Thus, opinion averaging can be viewed as a sequence of best-response updates in a complete-information game, where each agent selects an opinion to balance
-conformity with its intrinsic belief.
-The resulting Nash equilibrium coincides with the minimizer of the global social cost and is unique due to strong convexity.
-
-
-\section{Exsiting Algorithm} 
-  
 
 \section{Accelerated Opinion Iteration}
 We study accelerated iterative schemes for computing the equilibrium of the Friedkin--Johnsen (FJ) model.
@@ -1024,7 +856,7 @@ Our code for the estimation algorithm \textsc{LatestIter} and \textsc{MemoIter} 
 
 \textbf{Datasets and Equipment}
 All the real-world networks we consider are publicly available in the Koblenz Network Collection and Network Repository. 
-Our experiments are conducted on a diverse range of both undirected and directed networks, including social networks. For these datasets, the number 𝑛 of nodes ranges from about 16 thousand to 33 million, and the number 𝑚 of directed edges ranges from about 25 thousand to 301 million. The details of these datasets are presented in Table 1. All experiments are conducted using the Julia programming language.
+Our experiments are conducted on a diverse range of both undirected and directed networks, including social networks. For these datasets, the number $n$ of nodes ranges from about 16 thousand to 33 million, and the number $m$ of directed edges ranges from about 25 thousand to 301 million. The details of these datasets are presented in Table 1. All experiments are conducted using the Julia programming language.
 We conduct all experiments in a computational environment featuring a 4.2 GHz Intel i7-7700 CPU with 64GB of primary memory.
 
 
@@ -1172,18 +1004,12 @@ Extensive experiments on real networks with up to tens of millions of nodes demo
 
 Currently, our framework does not adaptively schedule the mix of push and sampling across nodes. In future work, we plan to develop variance-aware scheduling, extend to time-varying and weighted networks, and integrate our methods with preconditioned linear solvers to support batch queries.
 
-% \clearpage
-%%
-%% The next two lines define the bibliography style to be used, and
-%% the bibliography file.
+\newpage
 \bibliographystyle{ACM-Reference-Format}
-\balance
 \bibliography{reference}
 
 
-% \clearpage
-%%
-%% If your work has an appendix, this is the place to put it.
+\newpage
 \appendix
 
 \section{Appendix: Pseudocode}

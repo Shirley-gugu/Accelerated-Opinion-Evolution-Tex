@@ -1,0 +1,65 @@
+
+\section{Preliminaries}\label{sec:prelim}
+In this section, we introduce some useful notations and fundamental concepts of the FJ model of opinion formation for the convenience of description of problem formulation and algorithm.
+
+\subsection{Notations}
+We use $\mathbb{R}$ to represent the set of real numbers and regular lowercase letters like $a,b,c$ to represent scalars in $\mathbb{R}$. Bold lower letters are column vectors, e.g., $\aaa,\bb,\cc$. Bold capital letters, e.g., $\AA,\BB,\CC$ are matrices. To denote specific elements in vectors and matrices, We denote $A_{ij}$ as the entry of $\AA$ at $i$-th row and $j$-th column and $a_i$ as $i$-th element of vector $\aaa$. And we use $\aaa^\top$ and $\AA^\top$ to denote transpose of vector $\aaa$ and matrix $\AA$. 
+We use $\one$ to denote the vector of appropriate dimensions with all entries being ones and use $\ee_u$ to represent the $u$-th standard basis vector of appropriate dimensions. 
+$\II$ denotes the identify matrix of appropriate dimensions. 
+
+\subsection{Graph and Matrix Definitions}
+Let $\calG = (V,E)$ be an unweighted simple graph with $n = |V|$ nodes and  $m = |E|$ edges, where $V$ is the set of nodes and $E \subseteq V \times V$ is the set of edges. The graph $\calG$ is either a directed graph or an undirected graph depending on the context. The adjacency relation of all nodes in $\calG$ is encoded in the adjacency matrix $\AA$,  whose entry $a_{i j}=1$ if $i$ and $j$ are adjacent, and $a_{i j}=0$ otherwise. For any given node $i$, $N_i$ denote the  set  of its neighbors, meaning $N_i =\{ j: (i,j)\in E\}$. The degree \(d_i\) of any node \(i\) is defined by \(d_i=\sum_{j=1}^n a_{ij}\). The degree diagonal matrix of $\calG$ is $\DD={\rm diag}(d_1, d_2, \cdots, d_n)$. The degree vector $\dd$ is given by $\dd = \DD\one$. The transition matrix of an unbiased random walk on graph $\calG$ is $\PP = \DD^{-1} \AA$, which is a row-stochastic matrix. The Laplacian matrix $\LL$ of $\calG$ is $\LL = \DD - \AA$, which is a symmetric semi-positive definite matrix. Matrix $\LL$ is singular, and thus it is irreversible. For a matrix $\MM$, if the magnitudes of all the eigenvalues of $M$ are less than $1$, then the series $\sum_{k=0}^\infty \MM^k$ is a Neumann series and converges to \( (\II - \MM)^{-1} \). 
+
+\subsection{Friedkin--Johnsen (FJ) Model}\label{sec:FJ}
+As one of the first opinion dynamics models, the FJ model is an extension of the DeGroot's opinion model. In the DeGroot
+model, every node has only one opinion that is updated as the weighted
+average of its neighbors. Different from the DeGroot model, in the FJ
+model, each node $i \in V$ has two different kinds of opinions: one is
+the internal (or innate) opinion $s_i$, the other is the expressed
+opinion $z_i$. The internal opinion $s_i$ is assumed to remain constant,
+private to node $i$, while the expressed opinion $z_i$ evolves as a
+weighted average of its corresponding internal opinion $s_i$ and the
+expressed opinions of $i$'s neighbors. 
+
+
+Given a graph $G=(V,E)$, let $\mathbf{s}$ denote the internal opinion vector, with each entry satisfying $s_i\in[0,1]$.
+The formulation of the equilibrium opinion expressed in the FJ model is an iterative form such that
+\begin{equation}
+z^{(t+1)}_{i}=\frac{s_{i}+\sum_{j\in N_{i}}a_{ij}z^{(t)}_{j}}{1+\sum_{j\in N{i}}a_{ij}}.
+\label{fj-iteration}
+\end{equation}
+
+As in the FJ iterative formula above, the opinion of each node in the FJ model is updated as the weighted average of the neighbor's expressed opinion $z_j$ and its own internal opinion $s_i$. 
+When $t$ approches infinity, the updated expressed opinion was shown to converge to a unique equilibrium opinion $\zz_i$. So the iterative update in Equation~1 can be written compactly as 
+\(
+{\zz}^{(t+1)} = (\II+\DD)^{-1}\bigl(\s + \AA\zz^{(t)}\bigr)
+\)
+in vector form,
+which expresses the FJ dynamics as a linear transformation applied at each iteration.
+Then the system of equilibrium
+expressed opinion vector $\zz$ is equivalent to:
+$(\II+\LL)\zz=\s,$
+where $\II$ is the identify matrix , and $\LL=\DD-\AA$ is the Laplacian matrix. When $\mathcal{G}$ is connected and $a_{ij}\ge 0$, the matrix $\II+\LL$ is symmetric positive definite, ensuring existence and uniqueness of $\zz$. 
+This characterization motivates estimators and algorithms that exploit the spectral and structural properties of the Laplacian. 
+
+\subsection{Game-theoretic Interpretation}
+From a game-theoretic perspective, the classical FJ model admits an equivalent interpretation as the equilibrium of a quadratic utility game.
+Recall that the FJ equilibrium satisfies 
+$(\II+\DD-\AA)\zz=\s$.
+For undirected graphs, the matrix $\II+\DD-\AA$ corresponds to a symmetric, positive definite Laplacian-based operator, which allows the equilibrium to be characterized as the unique minimizer of a strongly convex quadratic objective.
+
+This formulation further admits a decentralized interpretation.
+Updating $z_i$ according to the FJ rule is equivalent to each agent $i$
+minimizing the local quadratic cost
+\begin{equation}
+	\label{eq:local-cost}
+	(z_i - s_i)^2 + \sum_{j \in N(i)} w_{i,j} (z_i - z_j)^2 ,
+\end{equation}
+given the opinions of its neighbors.
+Thus, opinion averaging can be viewed as a sequence of best-response updates in a complete-information game, where each agent selects an opinion to balance
+conformity with its intrinsic belief.
+The resulting Nash equilibrium coincides with the minimizer of the global social cost and is unique due to strong convexity.
+
+
+\subsection{Exsiting Algorithm} 
+  
