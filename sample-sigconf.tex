@@ -23,11 +23,12 @@
 \usepackage{hyperref}
 \usepackage{array}
 \usepackage{epstopdf}
-\usepackage{mweights}
+%\usepackage{mweights}
 \usepackage{balance}
 \usepackage{adjustbox}
 \usepackage{numprint}
 \usepackage{float}
+\usepackage{amssymb}
 
 
 
@@ -93,7 +94,13 @@
     \textcolor{red}{[wgy:#1]}%
 }
 
-
+\newenvironment{remark}{%
+	\par                  % 开启新段落
+	\noindent             % 取消首行缩进
+	\textbf{Remark:} \space % 加粗“Remark:”并加空格
+}{%
+	\par                  % 结束段落
+}
 
 \def\calG{\mathcal{G}}
 
@@ -105,8 +112,7 @@
 \author{anonymous authors}
 
 \begin{abstract}
-Online social networks serve as a pivotal platform for opinion formation and dissemination, characterized by highly dynamic interaction patterns. The Friedkin–Johnsen model provides a foundational framework for studying opinion dynamics in such settings. However, standard solvers for this model update opinions using only initial opinions and a fixed neighborhood structure, thereby ignoring temporal dependencies and suffering from slow convergence on large-scale graphs.
-To overcome this limitation, we propose a new class of efficient solvers that preserve the original equilibrium of the Friedkin–Johnsen model while significantly accelerating convergence. Our approach enriches the update rule with temporal awareness by responding to the latest expressed opinions and retaining memory of past states.
+Online social networks serve as a pivotal platform for opinion formation and dissemination, characterized by highly dynamic interaction patterns. The Friedkin–Johnsen model provides a foundational framework for studying opinion dynamics in such settings. However, standard solvers for this model update opinions using only initial opinions and a fixed neighborhood structure, thereby ignoring temporal dependencies and suffering from slow convergence on large-scale graphs. To overcome this limitation, we propose a new class of efficient solvers that preserve the original equilibrium of the Friedkin–Johnsen model while significantly accelerating convergence. Our approach enriches the update rule with temporal awareness by responding to the latest expressed opinions and retaining memory of past states.
 Experiments on real-world networks containing millions to tens of millions of nodes demonstrate the effectiveness, accuracy, and scalability of our methods.
 
 \end{abstract}
@@ -148,11 +154,10 @@ Specifically, when updating the $i$-th opinion at iteration $t+1$, the most rece
 \end{equation}
 This update reduces to the classical synchronous FJ iteration when all opinions on the right-hand side are taken from iteration $t$.
 As shown later, the sequential latest-opinion update preserves the FJ equilibrium and typically converges faster due to the immediate utilization of newly updated opinions.
-
 The sequential latest-opinion update admits a compact matrix representation.
-Specifically, it can be written as a linear fixed-point iteration
+Specifically, it can be written as
 $	\zz^{(k+1)} = \BB \zz^{(k)} + \cc,
-	\label{eq:fixed_point_form}$
+\label{eq:fixed_point_form}$
 where
 $\BB = (\II + \DD - \AA_{low})^{-1}\AA_{up}, \quad
 \cc = (\II + \DD - \AA_{low})^{-1}\s.$
@@ -164,11 +169,8 @@ This latest-available policy enables faster information propagation along the sw
 
 The update combines the aggregated neighbor influence with the internal opinion $s_i$ and applies a local normalization by $1+d_i$.
 The iteration terminates when a prescribed tolerance is met or a maximum number of iterations is reached.
-
-   
 Let $\epsilon^{(k)} = \zz^{(k)} - \zz$ denote the error at iteration $k$, where $\zz$ is the FJ equilibrium.
 We next establish the convergence of the sequential latest-opinion iteration.
-
 The theorem below establishes the convergence of the latest-value updates.
 
 
@@ -176,213 +178,214 @@ The theorem below establishes the convergence of the latest-value updates.
 	\label{thm:convergence}
 	Consider the latest-opinion iteration
 	\begin{equation}
-		\zz^{(t+1)} = \mathbf{B}\zz^{(t)} + \cc,
+		\zz^{(t+1)} = (\II+\DD-\AA_{\mathrm{low}})^{-1}\AA_{\mathrm{up}}\zz^{(t)} + (\II+\DD-\AA_{\mathrm{low}})^{-1}\s,
+		\label{eq:con_latest_iter}
 	\end{equation}
-	where $\mathbf{B} = (\II+\DD-\AA_{\mathrm{low}})^{-1}\AA_{\mathrm{up}}$.
-	The iteration converges to the unique FJ equilibrium
-	$\zz = (\II+\DD-\AA)^{-1}\s$ for any initialization $\zz^{(0)}$.
-	Moreover, the convergence is linear: for any induced matrix norm,
-	\[
-	\|\zz^{(t)}-\zz\| \le \|\mathbf{B}\|^t \|\zz^{(0)}-\zz\|.
-	\]
-	And the error satisfies
-$	\|\mathbf{z}^{(t)} - \mathbf{z}\|_{v} \le \frac{q^t}{1-q}\|\mathbf{z}^{(1)} - \mathbf{z}^{(0)}\|_{v},$ which shows the convergence rate of the algorithm.
+	The iteration converges linearly to the unique FJ equilibrium opinion
+	$\zz = (\II+\LL)^{-1}\s$ for any initial opinion $\s$. 
+	Moreover, the iteration matrix $\mathbf{B} = (\II+\DD-\AA_{\mathrm{low}})^{-1}\AA_{\mathrm{up}}$ satisfies $\rho(\BB) < 1$.
 \end{theorem} 
 
 
-\subsection{Proof of Theorem~\ref{thm:convergence}}
+%\begin{proof}
+%	Let $\zz^\ast = (\II+\LL)^{-1}\s$ denote the unique equilibrium of the FJ model,
+%	and define the error $\epsilon^{(k)} := \zz^{(k)} - \zz^\ast$.
+%	Then the iteration \eqref{eq:con_latest_iter} yields the error recursion
+%	\[
+%	\epsilon^{(k+1)} = \BB \epsilon^{(k)},
+%	\quad
+%	\BB = (\II+\DD-\AA_{\mathrm{low}})^{-1}\AA_{\mathrm{up}}.
+%	\]
+%	
+%	Under the FJ model assumptions, the matrix $\II+\LL$ has positive diagonal
+%	entries and nonpositive off-diagonal entries, and is strictly diagonally dominant.
+%	Hence, it is an M-matrix and is nonsingular.
+%	Moreover, the induced iteration matrix $\BB$ is nonnegative.
+%	
+%	We consider the $\ell_\infty$-norm.
+%	By standard arguments for strictly diagonally dominant systems,
+%	there exists a constant $q \in [0,1)$ such that
+%	\[
+%	\|\epsilon^{(k+1)}\|_\infty \le q \, \|\epsilon^{(k)}\|_\infty.
+%	\]
+%	Therefore, the iteration converges linearly to $\zz^\ast$.
+%	
+%	Finally, since $\rho(\BB) \le \|\BB\|_\infty \le q < 1$,
+%	the spectral radius of the iteration matrix satisfies $\rho(\BB) < 1$.
+%\end{proof}
 
-We provide a concise proof of the convergence of the latest-value iteration.
-Recall that the iteration can be written as
-\begin{equation}
-	\zz^{(t+1)} = \mathbf{B}\zz^{(t)} + \cc,
-	\label{eq:appendix_iter}
-\end{equation}
-where $\mathbf{B} = (\II+\DD-\AA_{\mathrm{low}})^{-1}\AA_{\mathrm{up}}$ and
-$\cc = (\II+\DD-\AA_{\mathrm{low}})^{-1}\s$.
 
-Let $\zz$ denote the fixed point of~\eqref{eq:appendix_iter}, which satisfies
-\begin{equation}
-	\zz = \mathbf{B}\zz + \cc.
-	\label{eq:appendix_fp}
-\end{equation}
-Define the error vector $\boldsymbol{\varepsilon}^{(t)} := \zz^{(t)} - \zz$.
-Subtracting~\eqref{eq:appendix_fp} from~\eqref{eq:appendix_iter} yields the linear
-error recursion
-\begin{equation}
-	\boldsymbol{\varepsilon}^{(t+1)} = \mathbf{B}\boldsymbol{\varepsilon}^{(t)}.
-	\label{eq:appendix_error}
-\end{equation}
-By induction, we obtain $\boldsymbol{\varepsilon}^{(t)} = \mathbf{B}^t \boldsymbol{\varepsilon}^{(0)}$.
 
-If $\rho(\mathbf{B}) < 1$, then $\mathbf{B}^t \to \mathbf{0}$ as $t \to \infty$,
-and hence $\boldsymbol{\varepsilon}^{(t)} \to \mathbf{0}$ for any initialization
-$\zz^{(0)}$.
-Therefore, the latest-value iteration converges to the unique fixed point $\zz$,
-which coincides with the equilibrium of the Friedkin--Johnsen model.
-Furthermore,
+
+\begin{proof}
+	Let $\zz^\ast=(\II+\LL)^{-1}\s$ denote the true value estimated by FJ model, and define the error $\epsilon^{(k)} := \zz^{(k)} - \zz^\ast$.
+	Then the error propagation satisfies
+	$		\label{eq:error-prop}
+	\epsilon^{(k+1)} = \BB \epsilon^{(k)},$
+	Since matrix $\II+\LL$ is strictly diagonally dominant by rows, i.e.,	$|1+d_{i}| > \sum_{j \neq i} |a_{ij}|, \quad 1\leq i \leq n,$ it is an $L$-matrix and hence nonsingular.
+	Moreover, the matrix $\MM := \II+\DD-\AA_{low}$ is nonsingular.
+	
+	We estimate the error in the $\ell_\infty$-norm.
+	For each component $i$, the Latest-opinion update implies
+	\begin{equation}
+		\label{eq:gs-component}
+		|\epsilon_i^{(k+1)}|
+		\le
+		\frac{1}{|1+d_{i}|}
+		\left(
+		\sum_{j=1}^{i-1} |a_{ij}| \, |\epsilon_j^{(k+1)}|
+		+
+		\sum_{j=i+1}^{n} |a_{ij}| \, |\epsilon_j^{(k)}|
+		\right).
+	\end{equation}
+	Using the definition of the $\ell_\infty$-norm, we obtain
+	$		|\epsilon_i^{(k+1)}|
+	\le
+	\frac{\sum_{j=i+1}^{n} |a_{ij}|}{|1+d_{i}| - \sum_{j=1}^{i-1} |a_{ij}|}
+	\,
+	\|\epsilon^{(k)}\|_\infty.$
+	By the strict diagonal dominance condition, the denominator is strictly larger than the numerator.
+	Define
+	\begin{equation}
+		q := \max_i
+		\frac{\sum_{j=i+1}^{n} |a_{ij}|}{|1+d_{i}| - \sum_{j=1}^{i-1} |a_{ij}|},
+	\end{equation}
+	then $0 \le q < 1$ and
+	\begin{equation}
+		\label{eq:contraction}
+		\|\epsilon^{(k+1)}\|_\infty \le q \, \|\epsilon^{(k)}\|_\infty.
+	\end{equation}
+	Iterating \eqref{eq:contraction} yields
+	$\|\epsilon^{(k)}\|_\infty \le q^k \, \|\epsilon^{(0)}\|_\infty,$
+	which implies $\epsilon^{(k)} \to 0$ as $k \to \infty$.
+	Therefore, the latest-opinion iteration converges linearly to $\zz^\ast$.
+	Finally, since $\rho(\BB) \le \|\BB\|_\infty \le q < 1$, the spectral radius of the iteration matrix satisfies $\rho(\BB) < 1$.
+\end{proof}
+
+Moreover, the convergence is linear: for any induced matrix norm,
 \[
-\|\zz^{(t+1)}-\zz^{(t)}\|=\|\zz-\zz^{(t)}-(\zz-\zz^{(t+1)})\|\]
-\[\geq\|\zz-\zz^{(t)}\|-\|\zz-\zz^{(t+1)}\|\geq(1-q)\|\zz-\zz^{(t)}\|,
+\|\zz^{(t)}-\zz\| \le \|\mathbf{B}\|^t \|\zz^{(0)}-\zz\|.
 \]
-on the other hand,
-\[
-\mathbf{z}^{(t+1)} - \mathbf{z}^{(t)} = \mathbf{B}(\mathbf{z}^{(t)} - \mathbf{z}^{(t-1)}),
-\]
-and hence
-\[
-\|\mathbf{z}^{(t+1)} - \mathbf{z}^{(t)}\|_{v} \le q\|\mathbf{z}^{(t)} - \mathbf{z}^{(t-1)}\|_{v}.
-\]
-As a result,
-\[\|\zz-\zz^{(t)}\|\leq\frac{q}{1-q}\|\zz^{(t)}-\zz^{(t-1)}\|\leq\frac{q^{t}}{1-q}\|\zz^{(1)}-\zz^{(0)}\|\]
-Iterating this inequality yields the stated bound on successive differences.
-\hfill$\square$
-
+And the error satisfies
+$	\|\mathbf{z}^{(t)} - \mathbf{z}\|_{v} \le \frac{q^t}{1-q}\|\mathbf{z}^{(1)} - \mathbf{z}^{(0)}\|_{v},$ which shows the convergence rate of the algorithm.
 The parameter $q=\|\mathbf{B}\|_{v}$ not only guarantees convergence but also characterizes the speed of convergence.
 Smaller values of $q$ imply faster stabilization of opinions, which is particularly important for large-scale networks.
-
 The next theorem is going to be useful in showing the main result.
-  
 
+%\subsection{Proof of Theorem~\ref{thm:convergence}}
+%
+%We provide a concise proof of the convergence of the latest-value iteration.
+%Let $\zz$ denote the fixed point of~\eqref{eq:con_latest_iter}, which satisfies
+%$	\zz = \mathbf{B}\zz + \cc.
+%	\label{eq:appendix_fp}$
+%Define the error vector $\boldsymbol{\varepsilon}^{(t)} := \zz^{(t)} - \zz$.
+%Subtracting from~\eqref{eq:con_latest_iter} yields the linear error recursion
+%$	\boldsymbol{\varepsilon}^{(t+1)} = \mathbf{B}\boldsymbol{\varepsilon}^{(t)}.
+%	\label{eq:appendix_error}$
+%By induction, we obtain $\boldsymbol{\varepsilon}^{(t)} = \mathbf{B}^t \boldsymbol{\varepsilon}^{(0)}$.
+%
+%$\rho(\mathbf{B}) < 1$, then $\mathbf{B}^t \to \mathbf{0}$ as $t \to \infty$,
+%and hence $\boldsymbol{\varepsilon}^{(t)} \to \mathbf{0}$ for any initialization
+%$\zz^{(0)}$.
+%Therefore, the latest-value iteration converges to the unique fixed point $\zz$,
+%which coincides with the equilibrium of the Friedkin--Johnsen model.
+%\hfill$\square$
+%
+%Furthermore,
+%\[
+%\|\zz^{(t+1)}-\zz^{(t)}\|=\|\zz-\zz^{(t)}-(\zz-\zz^{(t+1)})\|\]
+%\[\geq\|\zz-\zz^{(t)}\|-\|\zz-\zz^{(t+1)}\|\geq(1-q)\|\zz-\zz^{(t)}\|,
+%\]
+%on the other hand,
+%\[
+%\mathbf{z}^{(t+1)} - \mathbf{z}^{(t)} = \mathbf{B}(\mathbf{z}^{(t)} - \mathbf{z}^{(t-1)}),
+%\]
+%and hence
+%\[
+%\|\mathbf{z}^{(t+1)} - \mathbf{z}^{(t)}\|_{v} \le q\|\mathbf{z}^{(t)} - \mathbf{z}^{(t-1)}\|_{v}.
+%\]
+%As a result,
+%\[\|\zz-\zz^{(t)}\|\leq\frac{q}{1-q}\|\zz^{(t)}-\zz^{(t-1)}\|\leq\frac{q^{t}}{1-q}\|\zz^{(1)}-\zz^{(0)}\|\]
+%Iterating this inequality yields the stated bound on successive differences.
+
+
+
+\begin{theorem}[Spectral Improvement over Classical FJ Iteration]
+	\label{thm:spectral_improvement}
+	Let $\BB_{\mathrm{FJ}} = (\II+\DD)^{-1}\AA$ denote the iteration matrix of the classical
+	Friedkin--Johnsen iteration, and let
+	$\BB_{\mathrm{LI}} = (\II+\DD-\AA_{\mathrm{low}})^{-1}\AA_{\mathrm{up}}$
+	be the iteration matrix of the proposed latest-value iteration.
+	If the underlying social graph is connected, then
+	$	\rho(\BB_{\mathrm{LI}}) < \rho(\BB_{\mathrm{FJ}}) < 1.$
+	Consequently, the latest-value iteration converges faster than the classical FJ iteration.
+\end{theorem}
 
 \begin{proof}
-	Let $A \ge 0$ be the adjacency matrix and decompose it as
-	$A = A_{\mathrm{low}} + A_{\mathrm{up}}$, where $A_{\mathrm{low}}$ and
-	$A_{\mathrm{up}}$ denote the strictly lower- and upper-triangular parts,
-	respectively. Let $D$ be the diagonal degree matrix and define $S := I + D$,
-	which is positive diagonal.
-	
-	The iteration matrix of the FJ basic iteration is given by
+	The FJ iteration matrix is
+	$\mathbf{B}_{\mathrm{FJ}} = (\mathbf{I}+\mathbf{D})^{-1}\mathbf{A},
+	\qquad,$
+	while the latest-value iteration matrix is
+	$\mathbf{B}_{\mathrm{LI}} = (\mathbf{I}+\mathbf{D}-\mathbf{A}_{\mathrm{low}})^{-1}\mathbf{A}_{\mathrm{up}}.$
+	By the Stein--Rosenberg theorem for nonnegative matrix splittings (see, e.g., [Thm.~3.33]{varga2000matrix}), the spectral radii of the corresponding iteration matrices satisfy
+	$
+	\rho(\mathbf{B}_{\mathrm{LI}})
+	\;\le\;
+	\rho(\mathbf{B}_{\mathrm{FJ}}^{2})
+	=
+	\rho(\mathbf{B}_{\mathrm{FJ}})^{2}.
+	$
+	Since $0<\rho(\BB_{\mathrm{FJ}})<1$, we have
+	$\rho(\BB_{\mathrm{FJ}})^{2} < \rho(\BB_{\mathrm{FJ}})$,
+	which implies
 	\[
-	T_{\mathrm{FJ}} := S^{-1} A = S^{-1}(A_{\mathrm{low}} + A_{\mathrm{up}}),
-	\]
-	while the iteration matrix corresponding to the LatestIter iteration is
-	\[
-	T_{\mathrm{LI}} := (S - A_{\mathrm{low}})^{-1} A_{\mathrm{up}} .
-	\]
-	
-	Since $S - A_{\mathrm{low}}$ is lower triangular with strictly positive
-	diagonal entries, it is invertible and $(S - A_{\mathrm{low}})^{-1} \ge 0$.
-	For any $x \ge 0$, define $y := T_{\mathrm{LI}} x$. By forward substitution,
-	$y$ satisfies
-	\[
-	y = S^{-1}(A_{\mathrm{up}} x + A_{\mathrm{low}} y).
-	\]
-	Iterating this relation yields
-	\[
-	y = \sum_{t=0}^{n-1} (S^{-1} A_{\mathrm{low}})^t S^{-1} A_{\mathrm{up}} x ,
-	\]
-	where the sum is finite because $A_{\mathrm{low}}$ is strictly lower
-	triangular and $A_{\mathrm{low}}^n = 0$.
-	
-	On the other hand, for the FJ basic iteration we have
-	\[
-	T_{\mathrm{FJ}} x = S^{-1}(A_{\mathrm{low}} + A_{\mathrm{up}}) x .
-	\]
-	Since all matrices involved are nonnegative, the above expansion implies
-	\[
-	T_{\mathrm{LI}} x \le S^{-1}(A_{\mathrm{low}} + A_{\mathrm{up}}) x
-	= T_{\mathrm{FJ}} x ,
-	\]
-	where the inequality holds componentwise. Consequently,
-	$0 \le T_{\mathrm{LI}} \le T_{\mathrm{FJ}}$ elementwise.
-	
-	By the monotonicity of the spectral radius for nonnegative matrices, it
-	follows that
-	\[
-	\rho(T_{\mathrm{LI}}) \le \rho(T_{\mathrm{FJ}}).
-	\]
-	Moreover, if $A \neq 0$ and the iteration matrix $T_{\mathrm{FJ}}$ is
-	irreducible (e.g., the underlying graph is connected and contains both
-	lower- and upper-triangular couplings), then $T_{\mathrm{LI}} \neq
-	T_{\mathrm{FJ}}$, and the Perron--Frobenius theorem yields the strict
-	inequality
-	\[
-	\rho(T_{\mathrm{LI}}) < \rho(T_{\mathrm{FJ}}).
+	\rho(\BB_{\mathrm{LI}}) < \rho(\BB_{\mathrm{FJ}}).
 	\]
 	
-	Therefore, the LatestIter iteration admits a strictly smaller spectral
-	radius than the FJ basic iteration and hence converges faster.
+	It is well known that for stationary linear iterations,
+	the asymptotic convergence rate is characterized by the spectral radius
+	of the iteration matrix (see, e.g.,[Ch.~2]{varga2000matrix}).
+	
 \end{proof}
 
 
+%\begin{proof}
+%	Let $\AA \ge 0$ be the adjacency matrix and decompose it as
+%	$\AA = \AA_{\mathrm{low}} + \AA_{\mathrm{up}}$, where $\AA_{\mathrm{low}}$ and
+%	$\AA_{\mathrm{up}}$ are the strictly lower- and upper-triangular parts, respectively. $\II+\DD$ is positive diagonal.
+%	
+%	The FJ iteration matrix is
+%	$\BB_{\mathrm{FJ}} = (\II+\DD)^{-1}(\AA_{\mathrm{low}} + \AA_{\mathrm{up}}),
+%	$
+%	while the latest-value iteration matrix is
+%	$
+%	\BB_{\mathrm{LI}} = (\II+\DD-\AA_{\mathrm{low}})^{-1}\AA_{\mathrm{up}}.$
+%	
+%	Since $\II+\DD-\AA_{\mathrm{low}}$ is lower triangular with positive diagonal entries,
+%	$(\II+\DD-\AA_{\mathrm{low}})^{-1} \ge 0$.
+%	For any $x \ge 0$, let $y = \BB_{\mathrm{LI}}x$.
+%	By forward substitution,
+%	\[
+%	y = (\II+\DD)^{-1}(\AA_{\mathrm{up}}x + \AA_{\mathrm{low}}y),
+%	\]
+%	which implies
+%	\[
+%	y = \sum_{k=0}^{n-1} ((\II+\DD)^{-1}\AA_{\mathrm{low}})^k (\II+\DD))^{-1}\AA_{\mathrm{up}}x .
+%	\]
+%	Because all matrices involved are nonnegative, this yields
+%	\[
+%	\BB_{\mathrm{LI}}x \le (\II+\DD)^{-1}(\AA_{\mathrm{low}} + \AA_{\mathrm{up}})x = \BB_{\mathrm{FJ}}x,
+%	\]
+%	componentwise, and hence $0 \le \BB_{\mathrm{LI}} \le \BB_{\mathrm{FJ}}$.
+%	
+%	By the monotonicity of the spectral radius for nonnegative matrices,
+%	$\rho(\BB_{\mathrm{LI}}) \le \rho(\BB_{\mathrm{FJ}})$.
+%	If the graph is connected, then $\BB_{\mathrm{LI}} \neq \BB_{\mathrm{FJ}}$, and the
+%	Perron--Frobenius theorem implies the strict inequality
+%	$\rho(\BB_{\mathrm{LI}}) < \rho(\BB_{\mathrm{FJ}})$. Thus, the latest-value iteration is convergent faster than the basic FJ iteration.
+%\end{proof}
 
 
-\begin{lemma}[Residual-Error Relation]
-Let $\zz^{(t+1)}$ denotes the estimate updated by the latest-value iteration at epoch $t+1$, and $\rr^{(t)}=\s-(\II+\DD-\AA)\zz^{(t)}$ denotes the residual error. 
-Then, for all $t \geq 0$, the estimation residual between the iterate and the true solution satisfies
-\begin{equation}
-\|\zz^{*}-\zz^{(t+1)}\|_v 
-\leq 
-\bigl\|(\II-(\II+\DD)^{-1}\AA)^{-1}\bigr\|{\scriptsize {\tiny {\tiny {\scriptsize {\scriptsize }}}}}_v
-\;\|\zz^{(t+1)}-\zz^{(t)}\|_v,
-\end{equation}
-\[
-\zz-\zz^{(t)}=(\II+\LL)\rr^{(t)}
-\]
-\[
-\zz^{(t+1)}-\zz^{(t)}=(\II+\DD)\rr^{(t)}
-\]
-\end{lemma}
-
-\begin{proof}
-The latest-value update rule can be written as
-$\zz^{(t+1)} = (\II+\DD)^{-1}\AA \zz^{(t)} + (\II+\DD)^{-1}\s.$
-Define the successive difference $\Delta\zz^{(t+1)} = \zz^{(t+1)}-\zz^{(t)}$.  
-Then it follows directly that
-$\Delta\zz^{(t+1)} = (\II+\DD)^{-1}\AA\,\Delta\zz^{(t)}.$
-
-Since the iteration converges to the unique fixed point $\zz^{*}$, we have
-$\zz^{*}-\zz^{(t+1)} 
-= \sum_{k=t+1}^{\infty} \Delta\zz^{(k+1)}.$
-Substituting the recursive relation of $\Delta\zz^{(t)}$ yields
-\begin{align}
-\zz^{*}-\zz^{(t+1)}
-&= \sum_{l=0}^{\infty} \bigl[(\II+\DD)^{-1}\AA\bigr]^l \Delta\zz^{(t+1)} \nonumber \\
-&= \bigl(\II-(\II+\DD)^{-1}\AA\bigr)^{-1} \Delta\zz^{(t+1)},
-\end{align}
-where the inverse exists due to the convergence of the Gauss--Seidel iteration.
-
-Taking the $\ell_1$-norm on both sides leads to
-\begin{equation}
-\|\zz^{*}-\zz^{(t+1)}\|_1
-\leq
-\bigl\|(\II-(\II+\DD)^{-1}\AA)^{-1}\bigr\|_1
-\;\|\zz^{(t+1)}-\zz^{(t)}\|_1,
-\end{equation}
-which establishes the claimed relation between the true estimation error and the difference of two consecutive iterates.
-\end{proof}
-
-
-Therefore, the iterative scheme yields geometrically decaying residuals, and the estimation error converges to zero.
-Let $q = \|\BB\|_v$ denote a matrix norm-induced bound with $q<1$. By Lemma,
-\[\|\zz-\zz^{(t)}\|\leq\frac{q}{1-q}\|\zz^{(t)}-\zz^{(t-1)}\|\leq\frac{q^{t}}{1-q}\|\zz^{(1)}-\zz^{(0)}\|\]
-Thus to achieve an absolute error $|\hat \zz^{(t)}-\zz|\le \varepsilon\|\zz^{(1)}-\zz^{(0)}\|$, it suffices to take
-\[
-T \;=\; \left\lceil \frac{\ln(\varepsilon(1-q))}{\ln(q)} \right\rceil.
-\]
-For graphs, one can further bound $\gamma$ by degree statistics: $q=\|\BB\|_v<1$.
-
-
-
-Turning to efficiency and implementation locality, we summarize the per iteration cost, error decay, and neighborhood growth as follows.
-
-
-
-\begin{theorem}[Time Complexity of \textsc{LatestIter}]\label{thm:time_complexity}To achieve an error $|\hat z_i^{(T)}-z_i|\le \varepsilon\|z\|$, the time complexity is bounded by:\[O\!\left( \min\bigl(\Theta(d_{max}^{T}),\, n T\bigr)\right),\]where $T=\left\lceil \frac{\log(1/\varepsilon)}{\log(1+1/d_{max})} \right\rceil$ .\end{theorem}
-
-\begin{proof}
-Assume $\gamma=\|(\II+\DD)^{-1}\AA\|_{\infty}<1$ and let $T=\left\lceil \frac{\log(1/\varepsilon)}{\log(1/\gamma)} \right\rceil$ be the number of iterations needed to achieve $|\hat z_i^{(T)}-z_i|\le \varepsilon\|z\|$.
-Then the total time to reach accuracy $\varepsilon$ admits the following upper bounds:
-we can upper bound the total number of tasks in t iterations by 
-$O(\sum_{k=0}^{t-1}|N_i(k)|)\;=\;
-O\!\left( \min\bigl(\Theta(d_{max}^{T}),\, n T\bigr)\right),
-\quad$
-Since $\|r^{(t)}\|_\infty$ decays as $\|G\|^t_\infty$, the algorithm terminates at $\|r\|_\infty < \epsilon$ within at most $ln(\epsilon)/ln(\|(\II+\DD)^{-1}A\|_\infty)$ iterations, 
-Moreover, using $\gamma\le d_{max}(1+d_{max})$ yields an explicit graph-parameter bound,
-$T \;\le\; \left\lceil \frac{\log(1/\varepsilon)}{\log\!\left(1+\frac{1}{d_{max}}\right)} \right\rceil.$
-This completes the proof.
-\end{proof}
 
 \begin{algorithm}[t]
 	\caption{LatestIter for opinion estimation}
@@ -416,6 +419,196 @@ This completes the proof.
 	\Return{$(z,\mathrm{
 			it})$}
 \end{algorithm}
+
+\begin{remark}[Interpretation of the Stopping Criterion]
+	\label{rem:stopping}
+	In practice, LatestIter is terminated when the one-step update difference
+	$\|\zz^{(t+1)}-\zz^{(t)}\|_\infty$ falls below a prescribed tolerance $\varepsilon$.
+	While this criterion does not directly measure the distance to the true opinion vector
+	$\zz^*$, the following relation holds under the LatestIter update:
+	\begin{equation}
+		\|\zz^{*}-\zz^{(t)}\|_\infty
+		\le
+		\|(\II+\DD-\AA)^{-1}\|_\infty \, \|(\II+\DD-\AA_{low})\|_\infty
+		\|\zz^{(t+1)}-\zz^{(t)}\|_\infty.
+	\end{equation}
+	For the standard Friedkin--Johnsen setting, $(\II+\DD-\AA)$ is strictly diagonally
+	dominant, which implies $\|(\II+\DD-\AA)^{-1}\|_\infty \le 1$ by the Varah bound.
+	As a result, the termination criterion based on the update difference provides
+	an a posteriori control of the true estimation error up to a constant factor.
+	This relation is used to interpret the stopping tolerance in our experiments.
+\end{remark}
+
+
+
+\begin{lemma}[Error Bound]
+	Let $\zz^{(t+1)}$ denotes the estimate updated by the latest-opinion iteration at epoch $t+1$, and $\rr^{(t)}=\s-(\II+\DD-\AA)\zz^{(t)}$ denotes the residual error. 
+	Then, for all $t \geq 0$, the error bound between the estimate opinion and the true opinion satisfies
+	\begin{equation}
+		\|\zz^{*}-\zz^{(t)}\|_\infty\leq (1+\max \sum_{j>i}a_{ij})\|\zz^{(t+1)}-\zz^{(t)}\|_\infty,
+	\end{equation}
+\end{lemma}
+
+\begin{proof}
+	By the LatestIter update,
+	\[
+	(\II+\DD-\AA_{low})\zz^{(t+1)}=\AA_{up}\zz^{(t)}+\s.
+	\]
+	Subtracting $(\II+\DD-\AA_{low})\zz^{(t)}$ from both sides yields
+	\[
+	(\II+\DD-\AA_{low})(\zz^{(t+1)}-\zz^{(t)})
+	=
+	\s-(\II+\DD-\AA)\zz^{(t)}
+	=
+	\rr^{(t)}.
+	\]
+	Hence,
+	\[
+	\zz^{(t+1)}-\zz^{(t)}=(\II+\DD-\AA_{low})^{-1}\rr^{(t)}.
+	\]
+	On the other hand, the fixed point satisfies
+	$\zz^*=(\II+\DD-\AA)^{-1}\s$, which implies
+	\[
+	\zz^*-\zz^{(t)}=(\II+\DD-\AA)^{-1}\rr^{(t)}.
+	\]
+	Combining the two relations gives
+	\[
+	\zz^*-\zz^{(t)}
+	=
+	(\II+\DD-\AA)^{-1}(\II+\DD-\AA_{low})(\zz^{(t+1)}-\zz^{(t)}).
+	\]
+	Taking the $\ell_\infty$ norm and using submultiplicativity,
+	\[
+	\|\zz^*-\zz^{(t)}\|_\infty
+	\le
+	\|(\II+\DD-\AA)^{-1}\|_\infty
+	\|(\II+\DD-\AA_{low})\|_\infty
+	\|\zz^{(t+1)}-\zz^{(t)}\|_\infty.
+	\]
+	For the standard Friedkin--Johnsen setting, $(\II+\DD-\AA)$ is strictly diagonally
+	dominant, implying $\|(\II+\DD-\AA)^{-1}\|_\infty \le 1$ by the Varah bound.
+	Moreover,
+	\[
+	\|(\II+\DD-\AA_{low})\|_\infty
+	=
+	\max_i \left(1+d_i-\sum_{j<i}a_{ij}\right)
+	\le
+	1+\max_i\sum_{j>i}a_{ij},
+	\]
+	which completes the proof.
+\end{proof}
+
+
+
+%\begin{proof}
+%The latest-opinion update rule can be written as
+%$\zz^{(t+1)} = (\II+\DD-\AA_{low})^{-1}\AA_{up} \zz^{(t)} + (\II+\DD-\AA_{low})^{-1}\s.$
+%$z^*=(\II+\DD-\AA)^{-1}\s,$
+%$z^*-z^{(t)}=(\II+\DD-\AA)^{-1}(\s-(\II+\DD-\AA) z^{(t)}))=(\II+\DD-\AA)^{-1}r^{(t)},$
+%On the other hand, $\zz^{(t+1)}-\zz^{(t)}=(\II+\DD-\AA_{low})^{-1}(\AA_{up}\zz^{(t)}+\s-(\II+\DD-\AA_{low})\zz^{(t)}))=(\II+\DD-\AA_{low})^{-1}r^{(t)}$
+%Combine the two equation,
+%\begin{equation}
+%(\zz^{*}-\zz^{(t)})= (\II+\LL)^{-1}(\II+\DD-\AA_{low})(\zz^{(t+1)}-\zz^{(t)}),
+%\end{equation}
+%$\|\zz^{*}-\zz^{(t)}\|_\infty\leq \|(\II+\LL)^{-1}\|_\infty\|(\II+\DD-\AA_{low})\|_\infty\|\zz^{(t+1)}-\zz^{(t)}\|_\infty,$
+%As $\|(\II+\LL)^{-1}\|_\infty\leq 1$,$\|(\II+\DD-\AA_{low})\|_\infty=\max (1+d_i-\sum_{j<i}a_{ij})\leq 1+\max \sum_{j>i}a_{ij}$, which guarantee the error bound of algorithm LatestIter.
+%\end{proof}
+
+
+
+
+
+Therefore, the iterative scheme yields geometrically decaying residuals, and the estimation error converges to zero.
+Let $q = \|\BB\|_v$ denote a matrix norm-induced bound with $q<1$. By Lemma,
+\[\|\zz-\zz^{(t)}\|\leq\frac{q}{1-q}\|\zz^{(t)}-\zz^{(t-1)}\|\leq\frac{q^{t}}{1-q}\|\zz^{(1)}-\zz^{(0)}\|\]
+Thus to achieve an absolute error $|\hat \zz^{(t)}-\zz|\le \varepsilon\|\zz^{(1)}-\zz^{(0)}\|$, it suffices to take
+\[
+T \;=\; \left\lceil \frac{\ln(\varepsilon(1-q))}{\ln(q)} \right\rceil.
+\]
+For graphs, one can further bound $\gamma$ by degree statistics: $q=\|\BB\|_v<1$.
+
+
+
+Turning to efficiency and implementation locality, we summarize the per iteration cost, error decay, and neighborhood growth as follows.
+
+
+
+\begin{theorem}[Time Complexity of \textsc{LatestIter}]\label{thm:time_complexity}To achieve an error $|\hat z_i^{(T)}-z_i|\le \varepsilon\|z^{(1)}-z^{(0)}\|$, the time complexity is bounded by:\[O\!\left\lceil m \frac{\ln(\varepsilon(1-q))}{\ln(q)} \right\rceil.\]
+\end{theorem}
+
+\begin{proof}
+	We consider the stationary linear iteration
+	\(
+	\zz^{(t+1)} = \BB \zz^{(t)} + \cc,
+	\)
+	where $\rho(\BB)<1$. Let $\zz$ denote its unique fixed point satisfying
+	$\zz = \BB \zz + \cc$.
+	
+	By standard linear convergence theory for stationary iterations
+	(e.g.,~\cite{varga2009matrix,saad2003iterative}),
+	the residuals decay geometrically. In particular, for any vector norm
+	$\|\cdot\|$ induced by a matrix norm $\|\cdot\|_v$, let
+	$q = \|\BB\|_v < 1$. Then for all $t\ge 1$,
+	\begin{equation}
+		\label{eq:error_bound}
+		\|\zz - \zz^{(t)}\|
+		\;\le\;
+		\frac{q}{1-q}\,
+		\|\zz^{(t)} - \zz^{(t-1)}\|
+		\;\le\;
+		\frac{q^t}{1-q}\,
+		\|\zz^{(1)} - \zz^{(0)}\|,
+	\end{equation}
+	where the first inequality follows from the Neumann series expansion of
+	$(\II-\BB)^{-1}$, and the second inequality follows by induction.
+	
+	To achieve an absolute error
+	$
+	|\hat z_i^{(t)} - z_i|
+	\le \varepsilon \|\zz^{(1)} - \zz^{(0)}\|,$
+it suffices to choose $T$ such that
+	$
+	\frac{q^T}{1-q} \le \varepsilon,$
+	which yields
+	\[
+	T
+	\;=\;
+	\left\lceil
+	\frac{\ln(\varepsilon(1-q))}{\ln(q)}
+	\right\rceil.
+	\]
+	
+	Each iteration of \textsc{LatestIter} involves a single sparse
+	matrix--vector multiplication with $\BB$, which costs $O(m)$ time,
+	where $m$ is the number of edges in the graph.
+	Therefore, the overall time complexity to reach the desired accuracy is
+	\[
+	O\!\left(
+	m \cdot
+	\left\lceil
+	\frac{\ln(\varepsilon(1-q))}{\ln(q)}
+	\right\rceil
+	\right),
+	\]
+	completing the proof.
+\end{proof}
+
+
+
+%\begin{proof}
+%	Assume $\gamma=\|(\II+\DD)^{-1}\AA\|_{\infty}<1$ and let $T=\left\lceil \frac{\log(1/\varepsilon)}{\log(1/\gamma)} \right\rceil$ be the number of iterations needed to achieve $|\hat z_i^{(T)}-z_i|\le \varepsilon\|z\|$.
+%	Then the total time to reach accuracy $\varepsilon$ admits the following upper bounds:
+%	we can upper bound the total number of tasks in t iterations by 
+%	$O(\sum_{k=0}^{t-1}|N_i(k)|)\;=\;
+%	O\!\left( \min\bigl(\Theta(d_{max}^{T}),\, n T\bigr)\right),
+%	\quad$
+%	Since $\|r^{(t)}\|_\infty$ decays as $\|G\|^t_\infty$, the algorithm terminates at $\|r\|_\infty < \epsilon$ within at most $ln(\epsilon)/ln(\|(\II+\DD)^{-1}A\|_\infty)$ iterations, 
+%	Moreover, using $\gamma\le d_{max}(1+d_{max})$ yields an explicit graph-parameter bound,
+%	$T \;\le\; \left\lceil \frac{\log(1/\varepsilon)}{\log\!\left(1+\frac{1}{d_{max}}\right)} \right\rceil.$
+%	This completes the proof.
+%\end{proof}
+
+
 
 
 
@@ -868,7 +1061,7 @@ estimating the opinion vector of the FJ model, we compare our three proposed alg
 \textbf{Internal opinion distributions.}
 In our experiments, the internal opinions are generated according to three different distributions: uniform distribution, exponential distribution, and power-law distribution. For the uniform distribution, the opinion $s_i$ of node $i$ is distributed uniformly in the range of $[0,1]$. For the exponential distribution, we choose the probability density $e^{x_{\min}} e^{-x}$ to generate $n'$ positive numbers $x$ with minimum value $x_{\min}>0$. Then, dividing each $x$ by the maximum observed value, we normalize these $n'$ numbers to the range $[0,1]$ as the internal opinions of nodes. Note that there is always a node with internal opinion $1$ due to the normalization operation. Similarly, for the power-law distribution, we use the probability density $(\alpha-1) x_{\min}^{\alpha-1} x^{-\alpha}$ with $\alpha=2.5$ to generate $n'$ positive numbers, and normalize them to interval $[0,1]$ as the internal opinions.
 
-\subsection{Experiments on Undirected graph}
+
 
 \paragraph{Efficiency.}
 Table~\ref{tab:method-time-error} reports the running time of six methods, namely \textsc{Solver}, \textsc{LI}, \textsc{LISOR}, \textsc{LatestIter}, \textsc{MemoIter}, and \textsc{SecondIter}, on several real-world networks of increasing scale.
@@ -912,36 +1105,36 @@ out.youtube-u-growth & 3,072,441 & 117,185,083  & 33,313 \\
 
 
 
-\begin{table*}[t]
-\caption{Datasets and comparison of running time (seconds) and error between \textsc{RWB} and \textsc{Asy}.}
-\label{tab:time-error}
-\centering
-\begin{adjustbox}{max width=\textwidth}
-\begin{tabular}{lcccccccccccc}
-\toprule
-\multirow{3}{*}{Dataset} 
-& \multicolumn{6}{c}{\textbf{Time (s)}} 
-& \multicolumn{6}{c}{\textbf{Error}} \\ 
-\cmidrule(lr){2-7} \cmidrule(lr){8-13}
-& \multicolumn{3}{c}{\textsc{RWB}} 
-& \multicolumn{3}{c}{\textsc{Asy}} 
-& \multicolumn{3}{c}{\textsc{RWB}} 
-& \multicolumn{3}{c}{\textsc{Asy}} \\ 
-\cmidrule(lr){2-4} \cmidrule(lr){5-7} \cmidrule(lr){8-10} \cmidrule(lr){11-13}
-& normal & Exp & Power-law 
-& Uniform & Exp & poisson
-& Uniform & Exp & poisson
-& Uniform & Exp & poisson \\ 
-\midrule
-BlogCatalog  & 3.13 & 2.63 & 3.10 &0.80 & 0.73 & 0.86 & 3.16e-4 & 1.5e-4 & 1.73e-4 & 4.99e-7 & 4.98e-7 & 4.95e-7 \\
-DBLP         & 5.51 & 5.19 & 4.90  & 1.31 & 1.13 & 1.85 & 4.42e-5 & 9.13e-5 & 3.45e-4 & 5.16e-7 & 5.18e-7 & 5.12e-7 \\
-YouTubeSnap  & 8.11 & 7.63   & 8.10 & 2.81  & 2.50 & 1.35  & 3.77e-4 & 2.79e-4 & 2.18e-4 & 5.96e-7 & 5.86e-7 & 5.93e-7 \\
-Flixster     & 13.67& 13.19 & 13.3 & 11.86 & 9.69 & 12.84 & 1.51e-5 & 8.81e-7 & 4.06e-4 & 6.10e-7 & 6.10e-7 & 6.11e-7 \\
-out.youtube  & 19.37 & 19.62 & 18.7 & 19.65 & 15.15 & 21.46 & 2.23e-4 &  2.55e-5& 4.21e-4 & 4.92e-7 & 5.05e-7 & 4.96e-7 \\
-\bottomrule
-\end{tabular}
-\end{adjustbox}
-\end{table*}
+%\begin{table*}[t]
+%\caption{Datasets and comparison of running time (seconds) and error between \textsc{RWB} and \textsc{Asy}.}
+%\label{tab:time-error}
+%\centering
+%\begin{adjustbox}{max width=\textwidth}
+%\begin{tabular}{lcccccccccccc}
+%\toprule
+%\multirow{3}{*}{Dataset} 
+%& \multicolumn{6}{c}{\textbf{Time (s)}} 
+%& \multicolumn{6}{c}{\textbf{Error}} \\ 
+%\cmidrule(lr){2-7} \cmidrule(lr){8-13}
+%& \multicolumn{3}{c}{\textsc{RWB}} 
+%& \multicolumn{3}{c}{\textsc{Asy}} 
+%& \multicolumn{3}{c}{\textsc{RWB}} 
+%& \multicolumn{3}{c}{\textsc{Asy}} \\ 
+%\cmidrule(lr){2-4} \cmidrule(lr){5-7} \cmidrule(lr){8-10} \cmidrule(lr){11-13}
+%& normal & Exp & Power-law 
+%& Uniform & Exp & poisson
+%& Uniform & Exp & poisson
+%& Uniform & Exp & poisson \\ 
+%\midrule
+%BlogCatalog  & 3.13 & 2.63 & 3.10 &0.80 & 0.73 & 0.86 & 3.16e-4 & 1.5e-4 & 1.73e-4 & 4.99e-7 & 4.98e-7 & 4.95e-7 \\
+%DBLP         & 5.51 & 5.19 & 4.90  & 1.31 & 1.13 & 1.85 & 4.42e-5 & 9.13e-5 & 3.45e-4 & 5.16e-7 & 5.18e-7 & 5.12e-7 \\
+%YouTubeSnap  & 8.11 & 7.63   & 8.10 & 2.81  & 2.50 & 1.35  & 3.77e-4 & 2.79e-4 & 2.18e-4 & 5.96e-7 & 5.86e-7 & 5.93e-7 \\
+%Flixster     & 13.67& 13.19 & 13.3 & 11.86 & 9.69 & 12.84 & 1.51e-5 & 8.81e-7 & 4.06e-4 & 6.10e-7 & 6.10e-7 & 6.11e-7 \\
+%out.youtube  & 19.37 & 19.62 & 18.7 & 19.65 & 15.15 & 21.46 & 2.23e-4 &  2.55e-5& 4.21e-4 & 4.92e-7 & 5.05e-7 & 4.96e-7 \\
+%\bottomrule
+%\end{tabular}
+%\end{adjustbox}
+%\end{table*}
 
 
 
@@ -990,7 +1183,6 @@ out.youtube  & 19.37 & 19.62 & 18.7 & 19.65 & 15.15 & 21.46 & 2.23e-4 &  2.55e-5
 \end{table*}
 
 
-\subsection{Experiments on directed graph}
 
 
 
@@ -1210,244 +1402,331 @@ By the termination criterion of the algorithm, the residual norm satisfies
 which completes the proof.
 \end{proof}
 
+\begin{lemma}
+	\begin{equation}
+		\|\zz^{*}-\zz^{(t+1)}\|_v 
+		\leq 
+		\bigl\|(\II-(\II+\DD-\AA_{low})^{-1}\AA_{up})^{-1}\bigr\|{\scriptsize {\tiny {\tiny {\scriptsize {\scriptsize }}}}}_v
+		\;\|\zz^{(t+1)}-\zz^{(t)}\|_v,
+	\end{equation}
+	\[
+	\zz-\zz^{(t)}=(\II+\LL)^{-1}\rr^{(t)}
+	\]
+	\[
+	\zz^{(t+1)}-\zz^{(t)}=(\II+\DD-\AA_{low})^{-1}\rr^{(t)}
+	\]
+\end{lemma}
+\begin{proof}
+	The latest-opinion update rule can be written as
+	$\zz^{(t+1)} = (\II+\DD-\AA_{low})^{-1}\AA_{up} \zz^{(t)} + (\II+\DD-\AA_{low})^{-1}\s.$
+	Define the successive difference $\Delta\zz^{(t+1)} = \zz^{(t+1)}-\zz^{(t)}$.  
+	Then it follows directly that
+	$\Delta\zz^{(t+1)} = (\II+\DD-\AA_{low})^{-1}\AA_{up}\,\Delta\zz^{(t)}.$
+	
+	Since the iteration converges to the unique fixed point $\zz^{*}$, we have
+	$\zz^{*}-\zz^{(t+1)} 
+	= \sum_{k=t+1}^{\infty} \Delta\zz^{(k+1)}.$
+	Substituting the recursive relation of $\Delta\zz^{(t)}$ yields
+	\begin{align}
+		\zz^{*}-\zz^{(t+1)}
+		&= \sum_{l=0}^{\infty} \bigl[(\II+\DD-\AA_{low})^{-1}\AA_{up}\bigr]^l \Delta\zz^{(t+1)} \nonumber \\
+		&= \bigl(\II-(\II+\DD-\AA_{low})^{-1}\AA\bigr)^{-1} \Delta\zz^{(t+1)},
+	\end{align}
+	where the inverse exists due to the convergence of the Gauss--Seidel iteration.
+	
+	Taking the $\ell_1$-norm on both sides leads to
+	\begin{equation}
+		\|\zz^{*}-\zz^{(t+1)}\|_1
+		\leq
+		\bigl\|(\II-(\II+\DD)^{-1}\AA)^{-1}\bigr\|_1
+		\;\|\zz^{(t+1)}-\zz^{(t)}\|_1,
+	\end{equation}
+	which establishes the claimed relation between the true estimation error and the difference of two consecutive iterates.
+\end{proof}
 
-\textbf{Nesterov's Accelerated Gradient (NAG) Method.}
-Given a strongly convex function $f$, NAG method, at $t$-th iteration,
-updates two vectors $\mathbf{y}^t$ and $\mathbf{z}^t$.
-It updates $\mathbf{y}^t$ with the help of $\mathbf{z}^t$ (with $\mathbf{z}^0 = \mathbf{y}^0$) as the following:
-\[
-\mathbf{z}^t = \mathbf{y}^{t-1} - \eta_t \nabla f\!\left(\mathbf{y}^{t-1}\right),
-\qquad
-\mathbf{y}^t = \mathbf{z}^t + \beta_t \left(\mathbf{z}^t - \mathbf{z}^{t-1}\right).
-\]
+\begin{lemma}[Equivalent A Posteriori Error Representation]
+	\label{lem:equiv-error}
+	Let $\zz^{(t)}$ be the sequence generated by LatestIter and let
+	$\BB = (\II+\DD-\AA_{low})^{-1}\AA_{up}$ denote the corresponding iteration matrix.
+	Then, for any vector norm $\|\cdot\|_v$ compatible with matrix multiplication,
+	the following relation holds:
+	\begin{equation}
+		\|\zz^{*}-\zz^{(t+1)}\|_v
+		\le
+		\|(\II-\BB)^{-1}\|_v \,
+		\|\zz^{(t+1)}-\zz^{(t)}\|_v.
+	\end{equation}
+\end{lemma}
 
-If we set $\eta_t = 1/(2-\alpha)$ and $\beta_t = (1-\kappa)/(1+\kappa)$
-with the inverse square root of condition number
-\[
-\kappa = \sqrt{(2-\alpha)/\alpha},
-\]
-then we can write the iteration in one line as the following iteration procedure:
-\[
-\text{NAG:}\quad
-\mathbf{y}^{t+1}
-= 2\Bigl[ \eta (I+\widetilde{P})\mathbf{y}^t \Bigr]
-- (1-\kappa)\Bigl[ \eta (I+\widetilde{P})\mathbf{y}^{t-1} \Bigr]
-+ \kappa^2 \widetilde{\mathbf{s}}. \tag{18}
-\]
+\begin{proof}
+	The LatestIter update can be written as
+	\[
+	\zz^{(t+1)} = \BB \zz^{(t)} + (\II+\DD-\AA_{low})^{-1}\s.
+	\]
+	Define the successive difference $\Delta\zz^{(t+1)}=\zz^{(t+1)}-\zz^{(t)}$.
+	Then
+	\[
+	\Delta\zz^{(t+1)} = \BB\,\Delta\zz^{(t)}.
+	\]
+	
+	Since the iteration converges to the unique fixed point $\zz^*$, we have
+	\[
+	\zz^{*}-\zz^{(t+1)}
+	=
+	\sum_{k=t+1}^{\infty} \Delta\zz^{(k+1)}.
+	\]
+	Substituting the recursive relation of $\Delta\zz^{(t)}$ yields
+	\[
+	\zz^{*}-\zz^{(t+1)}
+	=
+	\sum_{l=0}^{\infty} \BB^{\,l}\,\Delta\zz^{(t+1)}
+	=
+	(\II-\BB)^{-1}\Delta\zz^{(t+1)},
+	\]
+	where the inverse exists since the Gauss--Seidel iteration converges and
+	$\rho(\BB)<1$.
+	
+	Taking the $\|\cdot\|_v$ norm on both sides and using submultiplicativity
+	completes the proof.
+\end{proof}
 
-where $\eta = (1-\alpha)/((2-\alpha)(1+\kappa))$ and
-$\mathbf{y}_0 = 0, \; \mathbf{y}_1 = \alpha D^{-1/2}\mathbf{e}_s$.
-Notice that $(I+\widetilde{P})\mathbf{y}^t$ can be used for the next iteration;
-hence the per-iteration operations are at most $m$.
-Then we have the following convergence rate for $\ell_1$ estimation error of $\mathbf{x}^*$.
-
-\begin{theorem}
-Let $\mathbf{y}^{t+1}$ be the estimated vector returned by NAG method using iteration (18)
-(with $\mathbf{z}^0=\mathbf{y}^0=0$) and let $\mathbf{x}^t = D^{1/2}\mathbf{y}^t$,
-then the estimation error of $\mathbf{x}^*$ is upper bounded by
-\[
-\|\mathbf{x}^t - \mathbf{x}^*\|_1
-\le d_{\max} \sqrt{\frac{2n}{\alpha}}
-\exp\!\left( -\frac{t-1}{2\sqrt{(2-\alpha)/\alpha}} \right). \tag{19}
-\]
-And the total number of operations required for $\epsilon$-precision of per-entry error
-$\|\mathbf{x}^t - \mathbf{x}^*\|_\infty \le \epsilon$ is
-\[
-R_T = O\!\left(
-\frac{m}{\sqrt{\alpha}}
-\log\!\left( \frac{d_{\max}}{\epsilon}\sqrt{\frac{2n}{\alpha}} \right)
-\right). \tag{20}
-\]
-\end{theorem}
-
-
-When high precision is required and $\alpha$ is small,
-\textsc{FwdPush} is likely not a local method, meaning per-epoch needs to touch the whole graph,
-hence the total complexity is about $O(m\log(1/\epsilon)/\alpha)$.
-Compared with the bound provided in Thm.~8, NAG method is $1/\sqrt{\alpha}$ times faster.
-However, whether there exists a local acceleration-based method like bound
-$O\!\left(\frac{\operatorname{vol}(S)}{\sqrt{\alpha}}\log\frac{1}{\epsilon}\right)$
-is still an open problem.
-
-
-\textbf{Polyak's Heavy Ball (HB) method.}
-Similar to NAG, another popular momentum-based acceleration method is the Heavy Ball method;
-different from NAG, the HB method updates $\mathbf{y}^t$ as:
-\[
-\mathbf{y}^{t+1}
-= \mathbf{y}^t - \eta_t \nabla f(\mathbf{y}^t)
-+ \beta_t (\mathbf{y}^t - \mathbf{y}^{t-1}),
-\]
-where we set
-\[
-\eta_t = \frac{4}{(\sqrt{2-\alpha} + \sqrt{\alpha})^2},
-\qquad
-\beta_t = \left(\frac{1-\kappa}{1+\kappa}\right)^2.
-\]
-
-We can reach the following update method:
-\[
-\mathbf{y}^{t+1}
-= 2(1-\alpha)
-\left[
-\frac{1+\kappa^2}{(1+\kappa)^2}\widetilde{P}\mathbf{y}^t
-- \frac{(1-\kappa)^2}{(1+\kappa)^2}\mathbf{y}^{t-1}
-\right]
-+ \frac{2\alpha(1+\kappa^2)}{(1+\kappa)^2}\widetilde{\mathbf{s}}.
-\]
-
-By changing variable $D^{1/2}\mathbf{y}^{t+1} = \mathbf{x}^{t+1}$, we have
-\[
-\mathbf{x}^{t+1}
-= \frac{2\alpha(1+\kappa^2)}{(1+\kappa)^2}
-A D^{-1} \mathbf{x}^t
-- \frac{(1-\kappa)^2}{(1+\kappa)^2} \mathbf{x}^{t-1}
-+ \frac{2(1-\alpha)(1+\kappa^2)}{(1+\kappa)^2}\mathbf{v}.
-\]
-
-Compared with local linear methods such as CD and \textsc{FwdPush},
-the NAG and HB methods admit a better convergence rate,
-with total number of iterations about $O(m/\sqrt{\alpha})$,
-compared with linear ones $O(m/\alpha)$.
-Hence $O(1/\sqrt{\alpha})$ times faster.
-One can also consider the most popular method, the conjugate gradient method,
-which has a better convergence rate than standard gradient descent and is the same as our momentum-based methods.
-However, our two methods are easier to implement.
-
-
-for any $\beta \in (0,2)$. 
-Let $\mu = \rho\!\left((I+D)^{-1}A\right)$. 
-The optimal relaxation parameter is given by
-$
-\beta_{\mathrm{opt}}
-=
-1 + \left(
-\frac{\mu}{1+\sqrt{1-\mu^{2}}}
-\right)^{2}.
-$
-
-In practice, explicitly computing $\mu$ is often infeasible for large-scale networks. 
-We therefore adopt a simple heuristic strategy: initialize $\beta$ close to $2$ and 
-gradually decrease it toward $1$ until the number of required updates is minimized. 
-Empirically, setting $\beta \approx 1.5$ yields a speedup of two to three times over 
-the non-relaxed iteration on typical networks. 
+%\textbf{Nesterov's Accelerated Gradient (NAG) Method.}
+%Given a strongly convex function $f$, NAG method, at $t$-th iteration,
+%updates two vectors $\mathbf{y}^t$ and $\mathbf{z}^t$.
+%It updates $\mathbf{y}^t$ with the help of $\mathbf{z}^t$ (with $\mathbf{z}^0 = \mathbf{y}^0$) as the following:
+%\[
+%\mathbf{z}^t = \mathbf{y}^{t-1} - \eta_t \nabla f\!\left(\mathbf{y}^{t-1}\right),
+%\qquad
+%\mathbf{y}^t = \mathbf{z}^t + \beta_t \left(\mathbf{z}^t - \mathbf{z}^{t-1}\right).
+%\]
+%
+%If we set $\eta_t = 1/(2-\alpha)$ and $\beta_t = (1-\kappa)/(1+\kappa)$
+%with the inverse square root of condition number
+%\[
+%\kappa = \sqrt{(2-\alpha)/\alpha},
+%\]
+%then we can write the iteration in one line as the following iteration procedure:
+%\[
+%\text{NAG:}\quad
+%\mathbf{y}^{t+1}
+%= 2\Bigl[ \eta (I+\widetilde{P})\mathbf{y}^t \Bigr]
+%- (1-\kappa)\Bigl[ \eta (I+\widetilde{P})\mathbf{y}^{t-1} \Bigr]
+%+ \kappa^2 \widetilde{\mathbf{s}}. \tag{18}
+%\]
+%
+%where $\eta = (1-\alpha)/((2-\alpha)(1+\kappa))$ and
+%$\mathbf{y}_0 = 0, \; \mathbf{y}_1 = \alpha D^{-1/2}\mathbf{e}_s$.
+%Notice that $(I+\widetilde{P})\mathbf{y}^t$ can be used for the next iteration;
+%hence the per-iteration operations are at most $m$.
+%Then we have the following convergence rate for $\ell_1$ estimation error of $\mathbf{x}^*$.
+%
+%\begin{theorem}
+%Let $\mathbf{y}^{t+1}$ be the estimated vector returned by NAG method using iteration (18)
+%(with $\mathbf{z}^0=\mathbf{y}^0=0$) and let $\mathbf{x}^t = D^{1/2}\mathbf{y}^t$,
+%then the estimation error of $\mathbf{x}^*$ is upper bounded by
+%\[
+%\|\mathbf{x}^t - \mathbf{x}^*\|_1
+%\le d_{\max} \sqrt{\frac{2n}{\alpha}}
+%\exp\!\left( -\frac{t-1}{2\sqrt{(2-\alpha)/\alpha}} \right). \tag{19}
+%\]
+%And the total number of operations required for $\epsilon$-precision of per-entry error
+%$\|\mathbf{x}^t - \mathbf{x}^*\|_\infty \le \epsilon$ is
+%\[
+%R_T = O\!\left(
+%\frac{m}{\sqrt{\alpha}}
+%\log\!\left( \frac{d_{\max}}{\epsilon}\sqrt{\frac{2n}{\alpha}} \right)
+%\right). \tag{20}
+%\]
+%\end{theorem}
+%
+%
+%When high precision is required and $\alpha$ is small,
+%\textsc{FwdPush} is likely not a local method, meaning per-epoch needs to touch the whole graph,
+%hence the total complexity is about $O(m\log(1/\epsilon)/\alpha)$.
+%Compared with the bound provided in Thm.~8, NAG method is $1/\sqrt{\alpha}$ times faster.
+%However, whether there exists a local acceleration-based method like bound
+%$O\!\left(\frac{\operatorname{vol}(S)}{\sqrt{\alpha}}\log\frac{1}{\epsilon}\right)$
+%is still an open problem.
 
 
-\subsubsection{Quadratic optimization lens}
-
-We can rewrite the linear system of (1) into strongly convex optimization and
-then transform the problem into a strongly convex optimization problem. Recall
-our target linear system is $(\II+\LL)\zz=\s$. For an
-undirected graph, the matrix $\II+\DD-\AA$ is symmetric normalized
-Laplacian. We define the
-minimization problem of a quadratic objective function $f$ as the following
-\begin{equation}
-\arg\min_{z \in \mathbb{R}^n}
-\left\{ f(z) \triangleq \frac{1}{2} \zz^\top (\II+\DD-\AA)\zz
- - \tilde{s}^\top \zz \right\},
-\end{equation}
-where $\II+\DD-\AA$ is positive definite. Clearly, $f$ is a strongly convex
-function, by taking the gradient $\nabla f(z)$ and letting it be zero, i.e.
-$\nabla f(z) := (\II+\DD-\AA)\zz - \s = 0$. To characterize the strongly convex
-and strong smoothness parameters of $f$ (See definitions of strongly convex and
-smoothness in Appendix B), denote $\lambda_1, \lambda_2, \ldots, \lambda_n$ as
-eigenvalues of $\LL$ with $\lambda_1 = 1 \ge \lambda_2 \ge \lambda_3 \ge \cdots
-\ge \lambda_n \ge 0$. Therefore, by the fact from the graph spectral theory, given the normalized $\II+\DD-\AA$, we have its eigenvalues $0 = \tilde{\lambda}_1 \le \cdots \le \tilde{\lambda}_n \le 2$.
-Therefore, the range of eigenvalues of $I - (1-\alpha)\tilde{P}$ is
-$\lambda(I - (1-\alpha)\tilde{P}) \in [\alpha, 2-\alpha]$.
-
-The above reformulation is commonly used in the optimization community and has
-also been studied in Fountoulakis et al.. It was observed that when
-the graph is undirected, \textsc{FwdPush} is a special case of a coordinate
-descent. The coordinate descent for the above problem (16) is
-\begin{equation}
-y^{t+1} = y^t - \eta_t \nabla_u f(y^t) \cdot e_u,
-\end{equation}
-where each step size should be chosen such that $\eta_t \le 1/L_u$, where
-$L_u$ is the Lipschitz continuous parameter,
-$\|\nabla_u f(y + \delta e_u) - \nabla_u f(y)\| \le L_u \cdot \delta$, for all
-$y \in \mathbb{R}^n$. Clearly, $L_u$ corresponds to the diagonal of
-$I - (1-\alpha)D^{-1/2}AD^{-1/2}$, which we always have $L_u \le 1$. Replacing
-$\eta_t = 1$ and letting $-\nabla(y^t) = r^t$ in (17). We can recover
-\textsc{FwdPush} accordingly. The coordinate descent algorithm could be
-accelerated by choosing momentum strategy.
-
-The challenge of obtaining faster iteration based on the accelerated coordinate
-descent method remains open due to the lack of linear-invariant property for
-the momentum method. Nevertheless, we use standard momentum
-techniques and leverage the advantage of continuous memory. Our momentum-based
-method can be expressed in a single line, and local linear convergence suggests
-that the number of iterations is
-\[
-O\!\left(\frac{1}{\alpha \cdot \gamma_{1:T}}
-   \log \frac{C_{\alpha,T}}{\epsilon}\right).
-\]
-In the next section, we will demonstrate that one can save $1 / \sqrt{\alpha}$
-run time.
-
-Now, if consensus is not reached, how should we quantify the cost of this lack of consensus? 
-Here we observe that since the standard models use averaging as their basic mechanism, 
-we can equivalently view nodes' actions in each time step as myopically optimizing a quadratic cost function:
-
-Updating $z_i$ as in Equation~(1) is the same as choosing $z_i$ to minimize
-\begin{equation}
-(z_i - s_i)^2 + \sum_{j \in N(i)} w_{i,j} (z_i - z_j)^2 .
-\tag{2}
-\end{equation}
-
-We therefore take this as the cost that $i$ incurs by choosing a given value of $z_i$, 
-so that averaging becomes a form of cost minimization.
-
-Given this view, we can think of repeated averaging as the trajectory of best-response dynamics 
-in a one-shot, complete information game played by the nodes in $V$, where $i$'s strategy is a choice 
-of opinion $z_i$, and her payoff is the negative of the cost in Equation~(2).
-
-We first consider the case of undirected graphs and later handle the more general case of directed graphs.
-The main result in this section is a tight bound on the price of anarchy for the opinion-formation game
-in undirected graphs. After this, we discuss two slight extensions to the model: in the first, each
-player can put a different amount of weight on her internal opinion; and in the second, each player has
-several fixed opinions she listens to instead of an internal opinion. We show that both models can be
-reduced to the basic form of the model which we study first.
-
-For undirected graphs we can simplify the social cost to the following form:
-\begin{equation}
-c(z) = \sum_i (z_i - s_i)^2 + 2 \sum_{(i,j)\in E,\, i>j} w_{i,j}(z_i - z_j)^2 .
-\end{equation}
-
-We can write this concisely in matrix form, by using the weighted Laplacian matrix $L$ of $G$.
-$L$ is defined by setting $L_{i,i} = \sum_{j\in N(i)} w_{i,j}$ and $L_{i,j} = -w_{i,j}$.
-We can thus write the social cost as
-\begin{equation}
-c(z) = z^{T} A z + \|z - s\|^{2},
-\end{equation}
-where the matrix $A = 2L$ captures the tension on the edges.
-The optimal solution is the $y$ minimizing $c(\cdot)$.
-By taking derivatives, we see that the optimal solution satisfies
-\begin{equation}
-(A + I)y = s.
-\end{equation}
-Since the Laplacian of a graph is a positive semidefinite matrix, it follows that $A + I$ is positive definite.
-Therefore, $(A + I)y = s$ has a unique solution:
-\[
-y = (A + I)^{-1}s.
-\]
-
-In the Nash equilibrium $x$ each player chooses an opinion which minimizes her cost; in terms of the
-derivatives of the cost functions, this implies that $c_i'(x) = 0$ for all $i$.
-Thus, to find the players' opinions in the Nash equilibrium we should solve the following system of equations:
-\[
-\forall i \quad (x_i - s_i) + \sum_{j\in N(i)} w_{i,j}(x_i - x_j) = 0.
-\]
-Therefore in the Nash equilibrium each player holds an opinion which is a weighted average of her
-internal opinion and the Nash equilibrium opinions of all her neighbors.
-This can be succinctly written as
-\begin{equation}
-(L + I)x = \left(\tfrac{1}{2}A + I\right)x = s.
-\end{equation}
-As before, $\tfrac{1}{2}A + I$ is a positive definite matrix, and hence the unique Nash equilibrium is
-\[
-x = \left(\tfrac{1}{2}A + I\right)^{-1}s.
-\]
+%\textbf{Polyak's Heavy Ball (HB) method.}
+%Similar to NAG, another popular momentum-based acceleration method is the Heavy Ball method;
+%different from NAG, the HB method updates $\mathbf{y}^t$ as:
+%\[
+%\mathbf{y}^{t+1}
+%= \mathbf{y}^t - \eta_t \nabla f(\mathbf{y}^t)
+%+ \beta_t (\mathbf{y}^t - \mathbf{y}^{t-1}),
+%\]
+%where we set
+%\[
+%\eta_t = \frac{4}{(\sqrt{2-\alpha} + \sqrt{\alpha})^2},
+%\qquad
+%\beta_t = \left(\frac{1-\kappa}{1+\kappa}\right)^2.
+%\]
+%
+%We can reach the following update method:
+%\[
+%\mathbf{y}^{t+1}
+%= 2(1-\alpha)
+%\left[
+%\frac{1+\kappa^2}{(1+\kappa)^2}\widetilde{P}\mathbf{y}^t
+%- \frac{(1-\kappa)^2}{(1+\kappa)^2}\mathbf{y}^{t-1}
+%\right]
+%+ \frac{2\alpha(1+\kappa^2)}{(1+\kappa)^2}\widetilde{\mathbf{s}}.
+%\]
+%
+%By changing variable $D^{1/2}\mathbf{y}^{t+1} = \mathbf{x}^{t+1}$, we have
+%\[
+%\mathbf{x}^{t+1}
+%= \frac{2\alpha(1+\kappa^2)}{(1+\kappa)^2}
+%A D^{-1} \mathbf{x}^t
+%- \frac{(1-\kappa)^2}{(1+\kappa)^2} \mathbf{x}^{t-1}
+%+ \frac{2(1-\alpha)(1+\kappa^2)}{(1+\kappa)^2}\mathbf{v}.
+%\]
+%
+%Compared with local linear methods such as CD and \textsc{FwdPush},
+%the NAG and HB methods admit a better convergence rate,
+%with total number of iterations about $O(m/\sqrt{\alpha})$,
+%compared with linear ones $O(m/\alpha)$.
+%Hence $O(1/\sqrt{\alpha})$ times faster.
+%One can also consider the most popular method, the conjugate gradient method,
+%which has a better convergence rate than standard gradient descent and is the same as our momentum-based methods.
+%However, our two methods are easier to implement.
+%
+%
+%for any $\beta \in (0,2)$. 
+%Let $\mu = \rho\!\left((I+D)^{-1}A\right)$. 
+%The optimal relaxation parameter is given by
+%$
+%\beta_{\mathrm{opt}}
+%=
+%1 + \left(
+%\frac{\mu}{1+\sqrt{1-\mu^{2}}}
+%\right)^{2}.
+%$
+%
+%In practice, explicitly computing $\mu$ is often infeasible for large-scale networks. 
+%We therefore adopt a simple heuristic strategy: initialize $\beta$ close to $2$ and 
+%gradually decrease it toward $1$ until the number of required updates is minimized. 
+%Empirically, setting $\beta \approx 1.5$ yields a speedup of two to three times over 
+%the non-relaxed iteration on typical networks. 
+%
+%
+%\subsubsection{Quadratic optimization lens}
+%
+%We can rewrite the linear system of (1) into strongly convex optimization and
+%then transform the problem into a strongly convex optimization problem. Recall
+%our target linear system is $(\II+\LL)\zz=\s$. For an
+%undirected graph, the matrix $\II+\DD-\AA$ is symmetric normalized
+%Laplacian. We define the
+%minimization problem of a quadratic objective function $f$ as the following
+%\begin{equation}
+%\arg\min_{z \in \mathbb{R}^n}
+%\left\{ f(z) \triangleq \frac{1}{2} \zz^\top (\II+\DD-\AA)\zz
+% - \tilde{s}^\top \zz \right\},
+%\end{equation}
+%where $\II+\DD-\AA$ is positive definite. Clearly, $f$ is a strongly convex
+%function, by taking the gradient $\nabla f(z)$ and letting it be zero, i.e.
+%$\nabla f(z) := (\II+\DD-\AA)\zz - \s = 0$. To characterize the strongly convex
+%and strong smoothness parameters of $f$ (See definitions of strongly convex and
+%smoothness in Appendix B), denote $\lambda_1, \lambda_2, \ldots, \lambda_n$ as
+%eigenvalues of $\LL$ with $\lambda_1 = 1 \ge \lambda_2 \ge \lambda_3 \ge \cdots
+%\ge \lambda_n \ge 0$. Therefore, by the fact from the graph spectral theory, given the normalized $\II+\DD-\AA$, we have its eigenvalues $0 = \tilde{\lambda}_1 \le \cdots \le \tilde{\lambda}_n \le 2$.
+%Therefore, the range of eigenvalues of $I - (1-\alpha)\tilde{P}$ is
+%$\lambda(I - (1-\alpha)\tilde{P}) \in [\alpha, 2-\alpha]$.
+%
+%The above reformulation is commonly used in the optimization community and has
+%also been studied in Fountoulakis et al.. It was observed that when
+%the graph is undirected, \textsc{FwdPush} is a special case of a coordinate
+%descent. The coordinate descent for the above problem (16) is
+%\begin{equation}
+%y^{t+1} = y^t - \eta_t \nabla_u f(y^t) \cdot e_u,
+%\end{equation}
+%where each step size should be chosen such that $\eta_t \le 1/L_u$, where
+%$L_u$ is the Lipschitz continuous parameter,
+%$\|\nabla_u f(y + \delta e_u) - \nabla_u f(y)\| \le L_u \cdot \delta$, for all
+%$y \in \mathbb{R}^n$. Clearly, $L_u$ corresponds to the diagonal of
+%$I - (1-\alpha)D^{-1/2}AD^{-1/2}$, which we always have $L_u \le 1$. Replacing
+%$\eta_t = 1$ and letting $-\nabla(y^t) = r^t$ in (17). We can recover
+%\textsc{FwdPush} accordingly. The coordinate descent algorithm could be
+%accelerated by choosing momentum strategy.
+%
+%The challenge of obtaining faster iteration based on the accelerated coordinate
+%descent method remains open due to the lack of linear-invariant property for
+%the momentum method. Nevertheless, we use standard momentum
+%techniques and leverage the advantage of continuous memory. Our momentum-based
+%method can be expressed in a single line, and local linear convergence suggests
+%that the number of iterations is
+%\[
+%O\!\left(\frac{1}{\alpha \cdot \gamma_{1:T}}
+%   \log \frac{C_{\alpha,T}}{\epsilon}\right).
+%\]
+%In the next section, we will demonstrate that one can save $1 / \sqrt{\alpha}$
+%run time.
+%
+%Now, if consensus is not reached, how should we quantify the cost of this lack of consensus? 
+%Here we observe that since the standard models use averaging as their basic mechanism, 
+%we can equivalently view nodes' actions in each time step as myopically optimizing a quadratic cost function:
+%
+%Updating $z_i$ as in Equation~(1) is the same as choosing $z_i$ to minimize
+%\begin{equation}
+%(z_i - s_i)^2 + \sum_{j \in N(i)} w_{i,j} (z_i - z_j)^2 .
+%\tag{2}
+%\end{equation}
+%
+%We therefore take this as the cost that $i$ incurs by choosing a given value of $z_i$, 
+%so that averaging becomes a form of cost minimization.
+%
+%Given this view, we can think of repeated averaging as the trajectory of best-response dynamics 
+%in a one-shot, complete information game played by the nodes in $V$, where $i$'s strategy is a choice 
+%of opinion $z_i$, and her payoff is the negative of the cost in Equation~(2).
+%
+%We first consider the case of undirected graphs and later handle the more general case of directed graphs.
+%The main result in this section is a tight bound on the price of anarchy for the opinion-formation game
+%in undirected graphs. After this, we discuss two slight extensions to the model: in the first, each
+%player can put a different amount of weight on her internal opinion; and in the second, each player has
+%several fixed opinions she listens to instead of an internal opinion. We show that both models can be
+%reduced to the basic form of the model which we study first.
+%
+%For undirected graphs we can simplify the social cost to the following form:
+%\begin{equation}
+%c(z) = \sum_i (z_i - s_i)^2 + 2 \sum_{(i,j)\in E,\, i>j} w_{i,j}(z_i - z_j)^2 .
+%\end{equation}
+%
+%We can write this concisely in matrix form, by using the weighted Laplacian matrix $L$ of $G$.
+%$L$ is defined by setting $L_{i,i} = \sum_{j\in N(i)} w_{i,j}$ and $L_{i,j} = -w_{i,j}$.
+%We can thus write the social cost as
+%\begin{equation}
+%c(z) = z^{T} A z + \|z - s\|^{2},
+%\end{equation}
+%where the matrix $A = 2L$ captures the tension on the edges.
+%The optimal solution is the $y$ minimizing $c(\cdot)$.
+%By taking derivatives, we see that the optimal solution satisfies
+%\begin{equation}
+%(A + I)y = s.
+%\end{equation}
+%Since the Laplacian of a graph is a positive semidefinite matrix, it follows that $A + I$ is positive definite.
+%Therefore, $(A + I)y = s$ has a unique solution:
+%\[
+%y = (A + I)^{-1}s.
+%\]
+%
+%In the Nash equilibrium $x$ each player chooses an opinion which minimizes her cost; in terms of the
+%derivatives of the cost functions, this implies that $c_i'(x) = 0$ for all $i$.
+%Thus, to find the players' opinions in the Nash equilibrium we should solve the following system of equations:
+%\[
+%\forall i \quad (x_i - s_i) + \sum_{j\in N(i)} w_{i,j}(x_i - x_j) = 0.
+%\]
+%Therefore in the Nash equilibrium each player holds an opinion which is a weighted average of her
+%internal opinion and the Nash equilibrium opinions of all her neighbors.
+%This can be succinctly written as
+%\begin{equation}
+%(L + I)x = \left(\tfrac{1}{2}A + I\right)x = s.
+%\end{equation}
+%As before, $\tfrac{1}{2}A + I$ is a positive definite matrix, and hence the unique Nash equilibrium is
+%\[
+%x = \left(\tfrac{1}{2}A + I\right)^{-1}s.
+%\]
 
 
 
