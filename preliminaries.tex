@@ -2,10 +2,24 @@
 \section{Preliminaries}\label{sec:prelim}
 In this section, we introduce some useful notations and fundamental concepts of the FJ model of opinion formation for the convenience of description of problem formulation and algorithm.
 
+
 \subsection{Notations}
-We use $\mathbb{R}$ to represent the set of real numbers and regular lowercase letters like $a,b,c$ to represent scalars in $\mathbb{R}$. Bold lower letters are column vectors, e.g., $\aaa,\bb,\cc$. Bold capital letters, e.g., $\AA,\BB,\CC$ are matrices. To denote specific elements in vectors and matrices, We denote $A_{ij}$ as the entry of $\AA$ at $i$-th row and $j$-th column and $a_i$ as $i$-th element of vector $\aaa$. And we use $\aaa^\top$ and $\AA^\top$ to denote transpose of vector $\aaa$ and matrix $\AA$. 
-We use $\one$ to denote the vector of appropriate dimensions with all entries being ones and use $\ee_u$ to represent the $u$-th standard basis vector of appropriate dimensions. 
-$\II$ denotes the identify matrix of appropriate dimensions. 
+We use $\mathbb{R}$ to denote the set of real numbers, and regular lowercase letters
+(e.g., $a,b,c$) to represent scalars in $\mathbb{R}$.
+Bold lowercase letters (e.g., $\aaa,\bb,\cc$) denote column vectors, and bold capital
+letters (e.g., $\AA,\BB,\CC$) denote matrices.
+For a matrix $\AA$, $A_{ij}$ denotes its $(i,j)$-th entry, and for a vector $\aaa$,
+$a_i$ denotes its $i$-th element.
+The transpose of a vector or matrix is denoted by $\aaa^\top$ and $\AA^\top$,
+respectively.
+We use $\one$ to denote the all-ones vector of appropriate dimensions, and
+$\ee_u$ to denote the $u$-th standard basis vector.
+The identity matrix of appropriate dimensions is denoted by $\II$.
+For a square matrix $\AA$, we respectively denote 
+its strictly lower-triangular and strictly upper-triangular parts by $\AA_{\mathrm{low}}$ and $\AA_{\mathrm{up}}$.
+
+
+
 
 \subsection{Graph and Matrix Definitions}
 Let $\calG = (V,E)$ be an unweighted simple graph with $n = |V|$ nodes and  $m = |E|$ edges, where $V$ is the set of nodes and $E \subseteq V \times V$ is the set of edges. The graph $\calG$ is either a directed graph or an undirected graph depending on the context. The adjacency relation of all nodes in $\calG$ is encoded in the adjacency matrix $\AA$,  whose entry $a_{i j}=1$ if $i$ and $j$ are adjacent, and $a_{i j}=0$ otherwise. For any given node $i$, $N_i$ denote the  set  of its neighbors, meaning $N_i =\{ j: (i,j)\in E\}$. The degree \(d_i\) of any node \(i\) is defined by \(d_i=\sum_{j=1}^n a_{ij}\). The degree diagonal matrix of $\calG$ is $\DD={\rm diag}(d_1, d_2, \cdots, d_n)$. The degree vector $\dd$ is given by $\dd = \DD\one$. The transition matrix of an unbiased random walk on graph $\calG$ is $\PP = \DD^{-1} \AA$, which is a row-stochastic matrix. The Laplacian matrix $\LL$ of $\calG$ is $\LL = \DD - \AA$, which is a symmetric semi-positive definite matrix. Matrix $\LL$ is singular, and thus it is irreversible. For a matrix $\MM$, if the magnitudes of all the eigenvalues of $M$ are less than $1$, then the series $\sum_{k=0}^\infty \MM^k$ is a Neumann series and converges to \( (\II - \MM)^{-1} \). 
@@ -62,4 +76,15 @@ The resulting Nash equilibrium coincides with the minimizer of the global social
 
 
 \subsection{Exsiting Algorithm} 
+  In this subsection, we introduce existing algorithms for estimating the equilibrium opinion vector. Since direct matrix inversion is
+  computationally infeasible due to its 𝑂(𝑛3) complexity, alternative
+  methods are necessary. Algorithms for directed graphs are discussed
+  in Appendix B.
+  \paragraph{Algorithm Based on Laplacian Solver}
   
+  The authors in~\cite{xu2021fast} proposed an approximation algorithm based on approximate Laplacian solver~\cite{kyng2016approximate}. By leveraging the positive semi-definiteness of $(\II + \LL)$, the algorithm avoids direct matrix inversion and instead approximates the solution with rigorous error guarantees. For the equilibrium opinion vector, given an error parameter $\epsilon$, the algorithm computes an approximate solution $\hat{\zz}$ in $O\left(m \log^3 n \log\left(\frac{\sqrt{n}}{\epsilon}\right)\right)$ time, satisfying
+  \begin{equation*}
+  	(1 - \epsilon) \|\zz \|_2^2 \le \|\hat{\zz}\|^2_2 \leq (1 + \epsilon) \|\zz \|_2^2.
+  \end{equation*}
+  
+  This algorithm demonstrates strong performance on large-scale undirected graphs, particularly for million-level networks. However, when the number of network nodes is relatively small, its performance is suboptimal due to the fixed overhead of preprocessing steps, such as graph sparsification and recursive decomposition. These steps are necessary for achieving efficiency on large graphs but become disproportionately costly for relatively small graphs. Additionally, due to its space complexity requirements, the algorithm cannot scale to graphs with more than tens of millions of edges. And it is important to note that this algorithm is specifically designed for undirected graphs and does not extend to directed graphs.
